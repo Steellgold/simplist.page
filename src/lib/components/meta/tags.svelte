@@ -1,7 +1,7 @@
 <script lang="ts">
   export let title: string = "Simplist | The simplicity orchestred by AI";
   export let siteName: string = "Simplist";
-  export let description: string = "Développeur back-end depuis 2018, spécialisé sur TypeScript et PHP !";
+  export let description: string = "A sample page for your browser's new tab page.";
   export let url: string = "https://simplist.page";
   export let color: string = "#0f172a";
   export let image: string | null = "https://cdn.discordapp.com/attachments/580083630995537961/1124660510365851758/og.png";
