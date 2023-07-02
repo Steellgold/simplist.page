@@ -64,7 +64,7 @@ export const Weather = async(): Promise<ReactElement> => {
         <></>
       ) : (
         <div className="fixed top-0 left-0 p-3">
-          <div className="flex justify-center">
+          <div className="flex items-center">
             <div>
               <Image
                 src={`/weather/${data.icon}.png`}
