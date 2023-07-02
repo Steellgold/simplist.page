@@ -74,9 +74,7 @@ export const Weather = async(): Promise<ReactElement> => {
                 alt="Weather icon"
               />
             </div>
-            <div className="ml-3">
-              <Text className="text-2xl font-semibold">{Math.round(data.temperature)}°C</Text>
-            </div>
+            <Text className="text-2xl ml-3 font-semibold">{Math.round(data.temperature)}°C</Text>
           </div>
         </div>
       )}
