@@ -32,6 +32,7 @@ const Page = (): ReactElement => {
             <input
               type="text"
               value={search}
+              autoFocus={true}
               placeholder="Combien y a t&apos;il d&apos;humains sur Terre ?"
               className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
               onChange={(e) => setSearch(e.target.value)}
