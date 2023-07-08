@@ -17,6 +17,9 @@ dependencies:
   clsx:
     specifier: ^1.2.1
     version: 1.2.1
+  cookie-muncher:
+    specifier: ^0.4.2
+    version: 0.4.2
   eslint:
     specifier: 8.44.0
     version: 8.44.0
@@ -737,6 +740,10 @@ packages:
 
   /concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
+
+  /cookie-muncher@0.4.2:
+    resolution: {integrity: sha512-hHE262KySf22sBkLNZ04W2sRuhLgxy9QueFfRa321Ro9s88AqZQGt2bW8X3yRK9E/KppxXzYAMYYHiEgwBHyVQ==}
+    dev: false
 
   /cross-spawn@7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}

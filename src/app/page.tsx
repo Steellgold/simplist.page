@@ -1,8 +1,11 @@
 "use client";
 
 import type { ReactElement } from "react";
+import type { Provider } from "#/lib/configs/provider/provider.type";
 import { CiSettings } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
+import { domCookie } from "cookie-muncher";
+import { providers } from "#/lib/configs/provider/provider.config";
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,12 +13,22 @@ import Link from "next/link";
 const Page = (): ReactElement => {
   const [search, setSearch] = useState<string>("");
 
+  let provider: Provider = providers[0];
+  const providerCookie = domCookie.get("provider");
+  if (!providerCookie) {
+    domCookie.set({ name: "provider", value: providers[0].name });
+  } else {
+    const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
+    if (filteredProvider) {
+      provider = filteredProvider;
+    } else {
+      provider = providers[0];
+    }
+  }
+
   const handleSearch = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-
-    if (search.length > 0) {
-      window.location.href = `https://www.google.com/search?q=${search}`;
-    }
+    if (search.length > 0) window.location.href = `${provider.url}${search}`;
   };
 
   return (
@@ -25,7 +38,14 @@ const Page = (): ReactElement => {
 
         <div className="flex bg-[#1E293B] rounded-full p-1 mt-4 w-full max-w-2xl">
           <div className="bg-[#2B3A52] flex rounded-full p-2 ml-0.5">
-            <Image src={"/providers/google.png"} className="grayscale" quality={5} alt="Googles" width={24} height={24} />
+            <Image
+              src={"/providers/" + provider.icon}
+              className="grayscale"
+              quality={5}
+              alt={provider.name}
+              width={24}
+              height={24}
+            />
           </div>
 
           <form className="flex flex-1" onSubmit={handleSearch}>
