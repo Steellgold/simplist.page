@@ -6,11 +6,11 @@ import { CiSettings } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
 import { domCookie } from "cookie-muncher";
 import { providers, randomMessages } from "#/lib/configs/provider/provider.config";
-import React, { useEffect, useState } from "react";
+import { Text } from "#/lib/components/atoms/text";
 import { useEventListener } from "usehooks-ts";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Text } from "#/lib/components/atoms/text";
 import clsx from "clsx";
 
 const Page = (): ReactElement => {

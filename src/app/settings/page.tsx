@@ -3,10 +3,10 @@
 import type { ReactElement } from "react";
 import { Text } from "#/lib/components/atoms/text";
 import { domCookie } from "cookie-muncher";
+import { providers } from "#/lib/configs/provider/provider.config";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { providers } from "#/lib/configs/provider/provider.config";
 
 const Page = (): ReactElement => {
   const handleProvider = (name: string): void => {
