@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const data = {
-  title: "Simplist - The simplicity orchestred by AI",
+  title: "Simplist",
   description: "A sample page for your browser's new tab page.",
   siteName: "Simplist"
 };
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
   title: {
     template: "%s - Simplist",
-    default: "Simplist - The simplicity orchestred by AI",
+    default: "Simplist",
     absolute: data.title
   },
   description: data.description,
@@ -22,20 +22,20 @@ export const metadata: Metadata = {
   openGraph: {
     title: {
       template: "%s - Simplist",
-      default: "Simplist - The simplicity orchestred by AI",
+      default: "Simplist",
       absolute: data.title
     },
     description: data.description,
     siteName: data.siteName,
     url: "https://simplist.page/",
     type: "website",
-    images: ["/images/og-image.png"]
+    images: ["images/og-image.png"]
   },
 
   twitter: {
     title: {
       template: "%s - Simplist",
-      default: "Simplist - The simplicity orchestred by AI",
+      default: "Simplist",
       absolute: data.title
     },
     description: data.description
