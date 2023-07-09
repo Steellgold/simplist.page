@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactElement } from "react";
 import { Text } from "#/lib/components/atoms/text";
 import { domCookie } from "cookie-muncher";

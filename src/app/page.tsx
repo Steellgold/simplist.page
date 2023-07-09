@@ -6,25 +6,23 @@ import { CiSettings } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
 import { domCookie } from "cookie-muncher";
 import { providers } from "#/lib/configs/provider/provider.config";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 const Page = (): ReactElement => {
   const [search, setSearch] = useState<string>("");
+  const [provider, setProvider] = useState<Provider>(providers[0]);
 
-  let provider: Provider = providers[0];
-  const providerCookie = domCookie.get("provider");
-  if (!providerCookie) {
-    domCookie.set({ name: "provider", value: providers[0].name });
-  } else {
-    const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
-    if (filteredProvider) {
-      provider = filteredProvider;
+  useEffect(() => {
+    const providerCookie = domCookie.get("provider");
+    if (!providerCookie) {
+      domCookie.set({ name: "provider", value: providers[0].name });
     } else {
-      provider = providers[0];
+      const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
+      if (filteredProvider) setProvider(filteredProvider);
     }
-  }
+  });
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
