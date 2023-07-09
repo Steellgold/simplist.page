@@ -10,7 +10,9 @@ import { providers } from "#/lib/configs/provider/provider.config";
 
 const Page = (): ReactElement => {
   const handleProvider = (name: string): void => {
-    domCookie.set({ name: "provider", value: name.toLowerCase() });
+    domCookie.set({ name: "provider", value: name.toLowerCase() }, {
+      expires: new Date(2030, 11, 31, 23, 59, 59, 999)
+    });
   };
 
   return (

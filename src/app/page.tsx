@@ -1,33 +1,54 @@
 "use client";
 
 import type { ReactElement } from "react";
-import type { Provider } from "#/lib/configs/provider/provider.type";
+import { type Provider } from "#/lib/configs/provider/provider.type";
 import { CiSettings } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
 import { domCookie } from "cookie-muncher";
 import { providers, randomMessages } from "#/lib/configs/provider/provider.config";
 import React, { useEffect, useState } from "react";
+import { useEventListener } from "usehooks-ts";
 import Image from "next/image";
 import Link from "next/link";
+import { Text } from "#/lib/components/atoms/text";
+import clsx from "clsx";
 
 const Page = (): ReactElement => {
   const [search, setSearch] = useState<string>("");
   const [provider, setProvider] = useState<Provider>(providers[0]);
+  const [tabDiscovered, setDiscovered] = useState<boolean>(true);
+
+  const question = randomMessages[Math.floor(Math.random() * randomMessages.length)];
 
   useEffect(() => {
+    setDiscovered((domCookie.get("tab-discovered")?.value == "true" ? true : false));
+
     const providerCookie = domCookie.get("provider");
     if (!providerCookie) {
-      domCookie.set({ name: "provider", value: providers[0].name });
+      domCookie.set({ name: "provider", value: providers[0].name.toLowerCase() }, {
+        expires: new Date(2030, 11, 31, 23, 59, 59, 999)
+      });
     } else {
       const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
       if (filteredProvider) setProvider(filteredProvider);
     }
-  });
+  }, []);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (search.length > 0) window.location.href = `${provider.url}${search}`;
   };
+
+  const onTabPressed = (event: KeyboardEvent): void => {
+    if (event.code == "Tab") {
+      if (search.length > 0) return;
+      domCookie.set({ name: "tab-discovered", value: "true" });
+      event.preventDefault();
+      setSearch(question.question);
+    }
+  };
+
+  useEventListener("keydown", onTabPressed);
 
   return (
     <>
@@ -51,7 +72,7 @@ const Page = (): ReactElement => {
               type="text"
               value={search}
               autoFocus={true}
-              placeholder={randomMessages[Math.floor(Math.random() * randomMessages.length)].question}
+              placeholder={question.question}
               className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -66,6 +87,15 @@ const Page = (): ReactElement => {
               </button>
             )}
           </form>
+        </div>
+
+        <div className={clsx(
+          "items-center justify-center mt-4 gap-2 hidden",
+          {
+            "sm:flex": search.length == 0 && tabDiscovered == false
+          }
+        )}>
+          <Text>Press <span className="font-bold border border-[#707F97] rounded px-1">Tab</span> to select the current suggestion</Text>
         </div>
       </div>
 
