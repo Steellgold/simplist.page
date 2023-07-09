@@ -5,7 +5,7 @@ import type { Provider } from "#/lib/configs/provider/provider.type";
 import { CiSettings } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
 import { domCookie } from "cookie-muncher";
-import { providers } from "#/lib/configs/provider/provider.config";
+import { providers, randomMessages } from "#/lib/configs/provider/provider.config";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,7 +51,7 @@ const Page = (): ReactElement => {
               type="text"
               value={search}
               autoFocus={true}
-              placeholder="Combien y a t&apos;il d&apos;humains sur Terre ?"
+              placeholder={randomMessages[Math.floor(Math.random() * randomMessages.length)].question}
               className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
               onChange={(e) => setSearch(e.target.value)}
             />

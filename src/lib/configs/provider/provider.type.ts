@@ -3,3 +3,7 @@ export type Provider = {
   url: string;
   icon: string;
 };
+
+export type Example = {
+  question: string;
+};
