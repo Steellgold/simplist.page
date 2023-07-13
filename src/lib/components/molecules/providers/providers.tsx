@@ -16,6 +16,7 @@ type ProviderProps = {
 
 export const SearchProvider = createContext<ProviderProps>({
   provider: providers[0],
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   setProvider: () => {}
 });
 
