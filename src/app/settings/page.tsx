@@ -1,9 +1,9 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { providers } from "#/lib/configs/provider/provider.config";
 import { Text } from "#/lib/components/atoms/text";
 import { domCookie } from "cookie-muncher";
-import { providers } from "#/lib/configs/provider/provider.config";
+import type { ReactElement } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";

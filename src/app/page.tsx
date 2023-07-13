@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, type ReactElement, useEffect } from "react";
-import { AiOutlineClose } from "react-icons/ai";
-import { domCookie } from "cookie-muncher";
-import { Text } from "#/lib/components/atoms/text";
-import { useEventListener } from "usehooks-ts";
-import Image from "next/image";
-import clsx from "clsx";
 import { providers, randomMessages } from "#/lib/configs/provider/provider.config";
 import { SearchProvider, Providers } from "#/lib/components/molecules/providers";
 import type { Provider } from "#/lib/configs/provider/provider.type";
+import { useState, type ReactElement, useEffect } from "react";
+import { Text } from "#/lib/components/atoms/text";
+import { AiOutlineClose } from "react-icons/ai";
+import { useEventListener } from "usehooks-ts";
+import { domCookie } from "cookie-muncher";
+import Image from "next/image";
+import clsx from "clsx";
 
 const Page = (): ReactElement => {
   const [search, setSearch] = useState<string>("");
