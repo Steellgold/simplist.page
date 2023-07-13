@@ -1,13 +1,13 @@
 "use client";
 
-import type { ReactElement } from "react";
-import { createContext, useContext, useState } from "react";
-import { domCookie } from "cookie-muncher";
-import { providers } from "#/lib/configs/provider/provider.config";
-import React from "react";
-import Image from "next/image";
-import clsx from "clsx";
 import type { Provider } from "#/lib/configs/provider/provider.type";
+import { providers } from "#/lib/configs/provider/provider.config";
+import { createContext, useContext, useEffect, useState } from "react";
+import { domCookie } from "cookie-muncher";
+import type { ReactElement } from "react";
+import Image from "next/image";
+import React from "react";
+import clsx from "clsx";
 
 type ProviderProps = {
   provider: Provider;
@@ -24,11 +24,13 @@ export const Providers = (): ReactElement => {
   const { provider, setProvider } = useContext(SearchProvider);
   const [selectProvider, setSelectProvider] = useState<boolean>(false);
 
-  const providerCookie = domCookie.get("provider");
-  if (providerCookie) {
-    const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
-    if (filteredProvider) setProvider(filteredProvider);
-  }
+  useEffect(() => {
+    const providerCookie = domCookie.get("provider");
+    if (providerCookie) {
+      const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
+      if (filteredProvider) setProvider(filteredProvider);
+    }
+  });
 
   return (
     <SearchProvider.Provider value={{ provider, setProvider }}>
