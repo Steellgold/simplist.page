@@ -6,7 +6,6 @@ export const providers: Provider[] = [
   { name: "Bing", url: "https://www.bing.com/search?q={search}", icon: "bing.png" },
   { name: "Yahoo", url: "https://search.yahoo.com/search?p={search}", icon: "yahoo.png" },
   { name: "Qwant", url: "https://www.qwant.com/?q={search}", icon: "qwant.png" },
-  { name: "Wikipedia", url: "https://en.wikipedia.org/wiki/{search}", icon: "wikipedia.png" },
   { name: "Ecosia", url: "https://www.ecosia.org/search?q={search}", icon: "ecosia.png" }
 ];
 
