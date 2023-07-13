@@ -77,7 +77,7 @@ const Page = (): ReactElement => {
             {selectProvider && (
               <>
                 {/* map providers but add the active one first */}
-                {providers.sort((a, b) => a.name == provider.name ? -1 : 1).map((provider, index) => (
+                {providers.sort((a, _) => a.name == provider.name ? -1 : 1).map((provider, index) => (
                   <Image
                     key={index}
                     src={"/providers/" + provider.icon}
