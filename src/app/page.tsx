@@ -53,7 +53,7 @@ const Page = (): ReactElement => {
   return (
     <>
       <div className="flex flex-col items-center justify-center mt-32 md:mt-0 px-3 md:px-0 md:h-screen">
-        <Image src={"/simplist-light.png"} alt="Simplist logo" quality={5} width={180} height={60} />
+        <Image src={"/simplist-light.png"} alt="Simplist logo" quality={5} width={200} height={50} />
 
         <div className="flex bg-[#1E293B] rounded-full p-1 mt-4 w-full max-w-2xl">
           <div className="bg-[#2B3A52] flex rounded-full p-2 ml-0.5">
@@ -76,7 +76,6 @@ const Page = (): ReactElement => {
 
             {selectProvider && (
               <>
-                {/* map providers but add the active one first */}
                 {providers.sort((a, _) => a.name == provider.name ? -1 : 1).map((provider, index) => (
                   <Image
                     key={index}
