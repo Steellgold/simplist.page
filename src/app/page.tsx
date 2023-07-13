@@ -1,37 +1,26 @@
 "use client";
 
-import type { ReactElement } from "react";
-import { type Provider } from "#/lib/configs/provider/provider.type";
+import { useState, type ReactElement, useEffect } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { domCookie } from "cookie-muncher";
-import { providers, randomMessages } from "#/lib/configs/provider/provider.config";
 import { Text } from "#/lib/components/atoms/text";
 import { useEventListener } from "usehooks-ts";
-import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
+import { providers, randomMessages } from "#/lib/configs/provider/provider.config";
+import { SearchProvider, Providers } from "#/lib/components/molecules/providers";
+import type { Provider } from "#/lib/configs/provider/provider.type";
 
 const Page = (): ReactElement => {
   const [search, setSearch] = useState<string>("");
   const [provider, setProvider] = useState<Provider>(providers[0]);
   const [tabDiscovered, setDiscovered] = useState<boolean>(true);
-  const [selectProvider, setSelectProvider] = useState<boolean>(false);
-
-  const question = randomMessages[Math.floor(Math.random() * randomMessages.length)];
 
   useEffect(() => {
     setDiscovered((domCookie.get("tab-discovered")?.value == "true" ? true : false));
-
-    const providerCookie = domCookie.get("provider");
-    if (!providerCookie) {
-      domCookie.set({ name: "provider", value: providers[0].name.toLowerCase() }, {
-        expires: new Date(2030, 11, 31, 23, 59, 59, 999)
-      });
-    } else {
-      const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
-      if (filteredProvider) setProvider(filteredProvider);
-    }
   }, []);
+
+  const question = randomMessages[Math.floor(Math.random() * randomMessages.length)];
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -51,56 +40,12 @@ const Page = (): ReactElement => {
   useEventListener("keydown", onTabPressed);
 
   return (
-    <>
+    <SearchProvider.Provider value={{ provider, setProvider }}>
       <div className="flex flex-col items-center justify-center mt-32 md:mt-0 px-3 md:px-0 md:h-screen">
         <Image src={"/simplist-light.png"} alt="Simplist logo" quality={5} width={200} height={50} />
 
         <div className="flex bg-[#1E293B] rounded-full p-1 mt-4 w-full max-w-2xl">
-          <div className="bg-[#2B3A52] flex rounded-full p-2 ml-0.5">
-            <Image
-              src={"/providers/" + provider.icon}
-              className={clsx(
-                "grayscale cursor-pointer transition-opacity duration-300 ease-in-out",
-                {
-                  "hidden": selectProvider
-                }
-              )}
-              quality={5}
-              alt={provider.name}
-              width={24}
-              height={24}
-              onClick={() => {
-                setSelectProvider(!selectProvider);
-              }}
-            />
-
-            {selectProvider && (
-              <>
-                {providers.sort((a, _) => a.name == provider.name ? -1 : 1).map((provider, index) => (
-                  <Image
-                    key={index}
-                    src={"/providers/" + provider.icon}
-                    className={clsx(
-                      "grayscale cursor-pointer hover:grayscale-0 transition-all duration-300 ease-in-out", {
-                        "ml-2": index != 0
-                      }
-                    )}
-                    quality={5}
-                    alt={provider.name}
-                    width={24}
-                    height={24}
-                    onClick={() => {
-                      setProvider(provider);
-                      setSelectProvider(false);
-                      domCookie.set({ name: "provider", value: provider.name.toLowerCase() }, {
-                        expires: new Date(2030, 11, 31, 23, 59, 59, 999)
-                      });
-                    }}
-                  />
-                ))}
-              </>
-            )}
-          </div>
+          <Providers />
 
           <form className="flex flex-1" onSubmit={handleSearch}>
             <input
@@ -139,7 +84,7 @@ const Page = (): ReactElement => {
           <AiFillPlusCircle className="text-light h-8 w-8" />
         </div> */}
       </div>
-    </>
+    </SearchProvider.Provider>
   );
 };
 
