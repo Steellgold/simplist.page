@@ -160,7 +160,11 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
                     {!openAIFetching && (
                       <div className="flex items-center justify-end mt-2 gap-2">
                         <button className="p-1 hover:bg-blueDark hover:text-light rounded"
-                          onClick={() => toast.error("Not implemented yet")}>
+                          onClick={() => {
+                            void setSearch(null);
+                            void setOpenAIResponse(null);
+                            toast.success("Your conversation has been deleted");
+                          }}>
                           <TbTrash className="h-5 w-5" /></button>
                         <button className="p-1 hover:bg-blueDark hover:text-light rounded">
                           <TbRefresh
@@ -170,6 +174,7 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
                               void setOpenAIResponse("null");
                               void setOpenAIRefetching(true);
                               void reSearch();
+                              toast.success("Sam is thinking to an better answer...");
                             }}
                           />
                         </button>

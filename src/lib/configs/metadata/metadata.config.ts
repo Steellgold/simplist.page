@@ -32,6 +32,18 @@ export const metadata: Metadata = {
     images: ["images/og-image.png"]
   },
 
+  keywords: [
+    "simplist",
+    "simplist.page",
+    "ai search engine",
+    "ai search",
+    "homepage browser",
+    "homepage",
+    "browser homepage",
+    "new tab page",
+    "search with ai"
+  ],
+
   twitter: {
     title: {
       template: "%s - Simplist",
