@@ -7,4 +7,6 @@ You can export the result in a PNG file, regenerate the response or copy for pas
 **Simplist does not use any database** except for user accounts, which store the number of credits remaining (for IA).
 
 ### TODO:
-- [X] History of searches (IA) with Local Storage
+- [ ] History of searches (IA) with Local Storage
+- [ ] Account creation and connection
+- [ ] Stripe integration for credits
