@@ -20,6 +20,7 @@ import clsx from "clsx";
 
 export const SearchBar: Component<{ connected?: boolean; randomQuestion: string }> = ({ connected, randomQuestion }) =>  {
   const supabase = createClientComponentClient();
+  const containerRef = useRef(null);
 
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
@@ -60,6 +61,21 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
     }
   };
 
+  const htmlToImageConvert = (): void => {
+    if (!connected) return;
+    if (!search) return;
+    toPng(containerRef.current!, { cacheBust: true })
+      .then((dataUrl) => {
+        const link = document.createElement("a");
+        link.download = search.toLocaleLowerCase().replace(" ", "-") + ".png";
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const reSearch = async(): Promise<void> => {
     if (!connected) return;
     if (!search) return;
@@ -78,23 +94,6 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
       setOpenAIResponse(r);
       setOpenAIFetching(false);
     }
-  };
-  
-  const containerRef = useRef(null);
-
-  const htmlToImageConvert = (): void => {
-    if (!connected) return;
-    if (!search) return;
-    toPng(containerRef.current!, { cacheBust: true })
-      .then((dataUrl) => {
-        const link = document.createElement("a");
-        link.download = search.toLocaleLowerCase().replace(" ", "-") + ".png";
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   };
 
   const onTabPressed = (event: KeyboardEvent): void => {
