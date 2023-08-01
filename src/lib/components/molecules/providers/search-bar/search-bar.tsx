@@ -79,6 +79,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
       const r = await response.text().then(text => text.slice(1, -1));
       setResponse(r);
       setIsThinking(false);
+      setCredits(credits - 1);
     }
   };
 
@@ -110,6 +111,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
       const response = await fetch("/api/chat", { method: "POST", body: JSON.stringify({ search }) });
       const res = await response.text().then(text => text.slice(1, -1));
 
+      setCredits(credits - 1);
       setResponse(res);
       setIsThinking(false);
     }
