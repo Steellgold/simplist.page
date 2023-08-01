@@ -178,24 +178,22 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
                             toast.success("Your conversation has been deleted");
                           }}>
                           <TbTrash className="h-5 w-5" /></button>
-                        <button className="p-1 hover:bg-blueDark hover:text-light rounded">
-                          <TbRefresh
-                            className="h-5 w-5"
-                            onClick={() => {
-                              void setOpenAIFetching(true);
-                              void setOpenAIResponse("null");
-                              void setOpenAIRefetching(true);
-                              void reSearch();
-                              toast.success("Sam is thinking to an better answer...");
-                            }}
-                          />
+                        <button className="p-1 hover:bg-blueDark hover:text-light rounded"
+                          onClick={() => {
+                            void setOpenAIFetching(true);
+                            void setOpenAIResponse("null");
+                            void setOpenAIRefetching(true);
+                            void reSearch();
+                            toast.success("Sam is thinking to an better answer...");
+                          }} >
+                          <TbRefresh className="h-5 w-5" />
                         </button>
-                        <button className="p-1 hover:bg-blueDark hover:text-light rounded">
-                          <TbCopy className="h-5 w-5"
-                            onClick={() => {
-                              void setValue(openAIResponse);
-                              toast.success("Copied to clipboard");
-                            }}/>
+                        <button className="p-1 hover:bg-blueDark hover:text-light rounded"
+                          onClick={() => {
+                            void setValue(openAIResponse);
+                            toast.success("Copied to clipboard");
+                          }}>
+                          <TbCopy className="h-5 w-5" />
                         </button>
                       </div>
                     )}

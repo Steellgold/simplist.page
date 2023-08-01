@@ -17,10 +17,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json("Unauthorized", { status: 401 });
 
-  const { data, error } = await supabase.from("users").select("credits").eq("id", user.id).single();
+  const { data, error } = await supabase.from("User").select("credits").eq("id", user.id).single();
   if (error) return NextResponse.json(error.message, { status: 500 });
-  if (!data) return NextResponse.json("User not found", { status: 404 });
-  if (data.credits < 1) return NextResponse.json("Not enough credits", { status: 403 });
+  if (!data) return NextResponse.json("This connection is not linked to a user.", { status: 404 });
+
+  if (data.credits < 1) return NextResponse.json("You don't have enough credits to use this feature, just like you don't have enough money to buy a house (or a car).", { status: 402 });
 
   const ip = request.headers.get("x-forwared-for") ?? "";
   const { success, reset } = await ratelimit.limit(ip);
