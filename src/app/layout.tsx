@@ -7,7 +7,7 @@ export { metadata } from "#/lib/configs/metadata";
 
 const RootLayout: Component<PropsWithChildren> = ({ children }) => {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="bg-blueDark">
         {children}
       </body>

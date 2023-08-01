@@ -41,6 +41,7 @@ module.exports = {
 
     borderRadius: {
       DEFAULT: "0.375rem",
+      md: "0.5rem",
       full: "9999px"
     },
 

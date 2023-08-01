@@ -6,7 +6,8 @@ export const providers: Provider[] = [
   { name: "Bing", url: "https://www.bing.com/search?q={search}", icon: "bing.png" },
   { name: "Yahoo", url: "https://search.yahoo.com/search?p={search}", icon: "yahoo.png" },
   { name: "Qwant", url: "https://www.qwant.com/?q={search}", icon: "qwant.png" },
-  { name: "Ecosia", url: "https://www.ecosia.org/search?q={search}", icon: "ecosia.png" }
+  { name: "Ecosia", url: "https://www.ecosia.org/search?q={search}", icon: "ecosia.png" },
+  { name: "GPT", url: "local", icon: "gpt.png" }
 ];
 
 export const randomMessages = [
@@ -24,5 +25,10 @@ export const randomMessages = [
   { question: "Roughly how many languages are spoken in the world today?" },
   { question: "What is the most popular sport in the world?" },
   { question: "Roughly how many people live in the world today?" },
-  { question: "What is the most popular food in the world?" }
+  { question: "What is the most popular food in the world?" },
+  { question: "What is the most popular animal in the world?" },
+  { question: "What is the most popular TV show in the world?" },
+  { question: "From which country did the Titanic set sail from?" },
+  { question: "Popularized by the movie 'Jaws', what is the scientific name for a Great White Shark?" },
+  { question: "In which country would you find the Leaning Tower of Pisa?" }
 ];

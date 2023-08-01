@@ -54,7 +54,7 @@ export const Providers = (): ReactElement => {
 
         {selectProvider && (
           <>
-            {providers.sort((a, _) => a.name == providers[0].name ? -1 : 1).map((provider, index) => (
+            {providers.sort((a, _) => a.name == provider.name ? -1 : 1).map((provider, index) => (
               <Image
                 key={index}
                 src={"/providers/" + provider.icon}
