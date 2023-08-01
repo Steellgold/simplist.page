@@ -19,6 +19,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!user) return NextResponse.json("Unauthorized", { status: 401 });
 
   const { data, error } = await supabase.from("User").select("credits").eq("id", user.id).single();
+  console.log(data, error);
   if (error) return NextResponse.json("You are not logged in, please refresh the page.", { status: 401 });
   if (!data) return NextResponse.json("This connection is not linked to a user.", { status: 404 });
 
