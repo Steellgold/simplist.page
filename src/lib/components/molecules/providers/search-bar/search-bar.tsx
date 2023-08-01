@@ -62,9 +62,11 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
   };
 
   const htmlToImageConvert = (): void => {
-    if (!connected) return;
+    if (!connected && provider.name == "GPT") return;
     if (!search) return;
-    toPng(containerRef.current!, { cacheBust: true })
+    if (containerRef.current == null) return;
+
+    toPng(containerRef.current, { cacheBust: true })
       .then((dataUrl) => {
         const link = document.createElement("a");
         link.download = search.toLocaleLowerCase().replace(" ", "-") + ".png";
@@ -77,7 +79,7 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
   };
 
   const reSearch = async(): Promise<void> => {
-    if (!connected) return;
+    if (!connected && provider.name == "GPT") return;
     if (!search) return;
     if (search.length == 0 || search.trim().length === 0) return;
 
@@ -134,10 +136,10 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
                   placeholder={randomQuestion}
                   className={clsx(
                     "text-[#707F97] w-full placeholder-[#3f4753] outline-none ml-2 bg-transparent", {
-                      "cursor-not-allowed": !connected
+                      "cursor-not-allowed": !connected && provider.name == "GPT"
                     }
                   )}
-                  disabled={!connected}
+                  disabled={!connected && provider.name == "GPT"}
                   onChange={(e) => setSearch(e.target.value)}
                 />
 
