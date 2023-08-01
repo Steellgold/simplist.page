@@ -8,5 +8,5 @@ You can export the result in a PNG file, regenerate the response or copy for pas
 
 ### TODO:
 - [ ] History of searches (IA) with Local Storage
-- [ ] Account creation and connection
-- [ ] Stripe integration for credits
+- [X] Account creation and connection
+- [X] Stripe integration for credits
