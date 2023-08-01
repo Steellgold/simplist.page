@@ -4,7 +4,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Provider } from "#/lib/configs/provider/provider.type";
 import { providers } from "#/lib/configs/provider/provider.config";
 import { useCopyToClipboard, useEventListener } from "usehooks-ts";
-import { TbCopy, TbRefresh, TbTrash } from "react-icons/tb";
+import { TbCoins, TbCopy, TbRefresh, TbTrash } from "react-icons/tb";
 import { Providers, SearchProvider } from "../providers";
 import type { Component } from "#/lib/utils/component";
 import { Text } from "#/lib/components/atoms/text";
@@ -15,10 +15,15 @@ import { useRef, useState } from "react";
 import { MdImage } from "react-icons/md";
 import { Toaster, toast } from "sonner";
 import { toPng } from "html-to-image";
-import Image from "next/image";
 import clsx from "clsx";
 
-export const SearchBar: Component<{ connected?: boolean; randomQuestion: string }> = ({ connected, randomQuestion }) =>  {
+type SearchBarProps = {
+  connected?: boolean;
+  randomQuestion: string;
+  userId: string;
+};
+
+export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion, userId }) =>  {
   const supabase = createClientComponentClient();
   const containerRef = useRef(null);
 
@@ -103,6 +108,17 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
       setSearch(randomQuestion);
       event.preventDefault();
     }
+  };
+
+  const handlePayment = async(): Promise<void> => {
+    if (!connected && provider.name == "GPT") return;
+    const response = await fetch("/api/payment", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+      headers: { "Content-Type": "application/json" }
+    });
+
+    window.location.href = await response.text().then(text => text.slice(1, -1));
   };
 
   useEventListener("keydown", onTabPressed);
@@ -216,10 +232,9 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
             )}
 
             <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
-              void console.log("TODO: Redirect to stripe");
+              void handlePayment();
             }}>
-              <Image src={"/coin.png" } alt="Simplist logo" width={20} height={20} />
-              &nbsp;0 credits left
+              <TbCoins className="h-5 w-5" />&nbsp;Buy more credits
             </button>
           </div>
         )}

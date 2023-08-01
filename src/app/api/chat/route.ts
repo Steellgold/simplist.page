@@ -5,6 +5,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis/nodejs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { prisma } from "#/lib/db/prisma";
 
 const ratelimit = new Ratelimit({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
@@ -66,6 +67,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   }).safeParse(response.data);
 
   if (!schema2.success) return NextResponse.json(schema2.error, { status: 400 });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { credits: { decrement: 1 } }
+  });
 
   if (schema2.data.choices[0].message?.content) {
     return NextResponse.json(schema2.data.choices[0].message.content);
