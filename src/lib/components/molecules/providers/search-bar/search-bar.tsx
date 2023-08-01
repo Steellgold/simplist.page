@@ -259,8 +259,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                 &nbsp;{credits} credits remaining
               </>}
               {credits == 0 && <>
-                <TbCoins className="h-5 w-5 animate-pulse" />
-                &nbsp;Buy credits
+                <TbCoins className="h-5 w-5" />
+                &nbsp;Buy credits to use AI (1 credit = 1 question)
               </>}
             </button>
           </div>

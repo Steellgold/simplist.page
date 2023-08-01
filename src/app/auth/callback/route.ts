@@ -16,6 +16,9 @@ export const GET = async(request: NextRequest): Promise<NextResponse> => {
     const user = (await supabase.auth.getSession()).data.session?.user;
     if (!user) return NextResponse.redirect(requestUrl.origin);
 
+    const exists = await prisma.user.findUnique({ where: { email: user.email } });
+    if (exists) return NextResponse.redirect(requestUrl.origin);
+
     const data = await prisma.user.create({
       data: {
         id: user.id,
