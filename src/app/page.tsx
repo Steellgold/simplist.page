@@ -1,12 +1,11 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { ReactElement } from "react";
-import { cookies } from "next/headers";
 import Image from "next/image";
 import { SearchBar } from "#/lib/components/molecules/providers/search-bar";
 import { randomMessages } from "#/lib/configs/provider/provider.config";
 
 export default async function Index(): Promise<ReactElement> {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createClientComponentClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   return (

@@ -17,8 +17,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     mode: "payment",
     allow_promotion_codes: true,
     metadata: { userId: schema.data.userId },
-    success_url: window.location.origin + "/auth/payment?session_id={CHECKOUT_SESSION_ID}",
-    cancel_url: window.location.origin
+    success_url: (process.env.NEXT_PUBLIC_URL || "") + "/auth/payment?session_id={CHECKOUT_SESSION_ID}",
+    cancel_url: process.env.NEXT_PUBLIC_URL
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment

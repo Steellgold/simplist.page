@@ -33,7 +33,16 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const [openAIFetching, setOpenAIFetching] = useState<boolean>(false);
   const [openAIRefetching, setOpenAIRefetching] = useState<boolean>(false);
   const [history, setHistory] = useState<string[]>([]);
+  const [isConnected, setIsConnected] = useState<boolean>(connected || false);
   const [__, setValue] = useCopyToClipboard();
+
+  supabase.auth.onAuthStateChange((_, session) => {
+    if (session) {
+      setIsConnected(true);
+    } else {
+      setIsConnected(false);
+    }
+  });
 
   const handleSearch = async(e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -45,7 +54,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
     }
 
     if (provider.name == "GPT") {
-      if (!connected) return;
+      if (!isConnected) return;
       if (history.includes(search)) {
         toast.error("You already asked this question (Click on the refresh button to ask again)");
         return;
@@ -67,7 +76,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   };
 
   const htmlToImageConvert = (): void => {
-    if (!connected && provider.name == "GPT") return;
+    if (!isConnected && provider.name == "GPT") return;
     if (!search) return;
     if (containerRef.current == null) return;
 
@@ -84,7 +93,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   };
 
   const reSearch = async(): Promise<void> => {
-    if (!connected && provider.name == "GPT") return;
+    if (!isConnected && provider.name == "GPT") return;
     if (!search) return;
     if (search.length == 0 || search.trim().length === 0) return;
 
@@ -111,7 +120,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   };
 
   const handlePayment = async(): Promise<void> => {
-    if (!connected && provider.name == "GPT") return;
+    if (!isConnected && provider.name == "GPT") return;
     const response = await fetch("/api/payment", {
       method: "POST",
       body: JSON.stringify({ userId }),
@@ -152,10 +161,10 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                   placeholder={randomQuestion}
                   className={clsx(
                     "text-[#707F97] w-full placeholder-[#3f4753] outline-none ml-2 bg-transparent", {
-                      "cursor-not-allowed": !connected && provider.name == "GPT"
+                      "cursor-not-allowed": !isConnected && provider.name == "GPT"
                     }
                   )}
-                  disabled={!connected && provider.name == "GPT"}
+                  disabled={!isConnected && provider.name == "GPT"}
                   onChange={(e) => setSearch(e.target.value)}
                 />
 
@@ -221,7 +230,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
           </div>
         </div>
 
-        {connected && provider.name == "GPT" && (
+        {isConnected && provider.name == "GPT" && (
           <div className="flex items-center justify-end mt-1 gap-2">
             {openAIResponse && !openAIFetching && !openAIRefetching && (
               <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
@@ -239,7 +248,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
           </div>
         )}
 
-        {!connected && provider.name == "GPT" && (
+        {!isConnected && provider.name == "GPT" && (
           <div className="flex flex-col items-center justify-center mt-1 gap-2">
             <Text>To use this feature, please login with one of this two providers below</Text>
             <div className="flex items-center justify-center gap-2">
