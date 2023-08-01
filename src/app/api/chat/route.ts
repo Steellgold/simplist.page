@@ -21,7 +21,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (error) return NextResponse.json(error.message, { status: 500 });
   if (!data) return NextResponse.json("This connection is not linked to a user.", { status: 404 });
 
-  if (data.credits < 1) return NextResponse.json("You don't have enough credits to use this feature, just like you don't have enough money to buy a house (or a car).", { status: 402 });
+  if (data.credits < 1) return NextResponse.json("If you don't have enough credits, click on the text at bottom right to get more.", { status: 402 });
 
   const ip = request.headers.get("x-forwared-for") ?? "";
   const { success, reset } = await ratelimit.limit(ip);

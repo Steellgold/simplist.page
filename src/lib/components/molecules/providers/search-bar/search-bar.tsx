@@ -79,7 +79,7 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
       setOpenAIFetching(false);
     }
   };
-
+  
   const containerRef = useRef(null);
 
   const htmlToImageConvert = (): void => {
