@@ -11,7 +11,7 @@ export default async function Index(): Promise<ReactElement> {
   return (
     <>
       <div className="flex flex-col items-center justify-center mt-32 md:mt-0 px-3 md:px-0 md:h-screen">
-        <Image src={"/simplist-light.png"} alt="Simplist logo" quality={5} width={200} height={50} />
+        <Image src={"/simplist-light.png"} loading="lazy" alt="Simplist logo" quality={5} width={200} height={50} />
 
         <div className="flex flex-col max-w-2xl w-full">
           <SearchBar

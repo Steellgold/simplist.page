@@ -33,52 +33,59 @@ export const Providers = (): ReactElement => {
   });
 
   return (
-    <SearchProvider.Provider value={{ provider, setProvider }}>
-      <div className="bg-[#2B3A52] flex rounded-full p-2 ml-0.5">
-        <Image
-          src={"/providers/" + provider.icon}
-          className={clsx(
-            "grayscale cursor-pointer transition-opacity duration-300 ease-in-out",
-            {
-              "hidden": selectProvider
-            }
-          )}
-          quality={5}
-          alt={provider.name}
-          width={24}
-          height={24}
+    <>
+      <SearchProvider.Provider value={{ provider, setProvider }}>
+        <div
+          className="bg-[#2B3A52] flex rounded-full p-2 ml-0.5"
           onClick={() => {
             setSelectProvider(!selectProvider);
-          }}
-        />
+            domCookie.set({
+              name: "alreadyVisited",
+              value: "true"
+            });
+          }}>
 
-        {selectProvider && (
-          <>
-            {providers.sort((a, _) => a.name == provider.name ? -1 : 1).map((provider, index) => (
-              <Image
-                key={index}
-                src={"/providers/" + provider.icon}
-                className={clsx(
-                  "grayscale cursor-pointer hover:grayscale-0 transition-all duration-300 ease-in-out", {
-                    "ml-2": index != 0
-                  }
-                )}
-                quality={5}
-                alt={provider.name}
-                width={24}
-                height={24}
-                onClick={() => {
-                  setProvider(provider);
-                  setSelectProvider(false);
-                  domCookie.set({ name: "provider", value: provider.name.toLowerCase() }, {
-                    expires: new Date(2030, 11, 31, 23, 59, 59, 999)
-                  });
-                }}
-              />
-            ))}
-          </>
-        )}
-      </div>
-    </SearchProvider.Provider>
+          <Image
+            src={"/providers/" + provider.icon}
+            className={clsx(
+              "grayscale cursor-pointer duration-300 ease-in-out hover:grayscale-0", {
+                "hidden": selectProvider
+              }
+            )}
+            loading="lazy"
+            alt={provider.name}
+            width={24}
+            height={24}
+          />
+
+          {selectProvider && (
+            <>
+              {providers.sort((a, _) => a.name == provider.name ? -1 : 1).map((provider, index) => (
+                <Image
+                  key={index}
+                  src={"/providers/" + provider.icon}
+                  className={clsx(
+                    "grayscale cursor-pointer hover:grayscale-0 transition-all duration-300 ease-in-out", {
+                      "ml-2": index != 0
+                    }
+                  )}
+                  loading="lazy"
+                  alt={provider.name}
+                  width={24}
+                  height={24}
+                  onClick={() => {
+                    setProvider(provider);
+                    setSelectProvider(false);
+                    domCookie.set({ name: "provider", value: provider.name.toLowerCase() }, {
+                      expires: new Date(2030, 11, 31, 23, 59, 59, 999)
+                    });
+                  }}
+                />
+              ))}
+            </>
+          )}
+        </div>
+      </SearchProvider.Provider>
+    </>
   );
 };

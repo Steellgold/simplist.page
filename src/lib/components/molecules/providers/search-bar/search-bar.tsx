@@ -16,6 +16,9 @@ import { MdImage } from "react-icons/md";
 import { Toaster, toast } from "sonner";
 import { toPng } from "html-to-image";
 import clsx from "clsx";
+import type { Cookie } from "cookie-muncher";
+import { domCookie } from "cookie-muncher";
+import Image from "next/image";
 
 type SearchBarProps = {
   connected?: boolean;
@@ -32,6 +35,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const supabase = createClientComponentClient();
   const containerRef = useRef(null);
 
+  const [av, setAV] = useState<Cookie | null>(null);
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
 
@@ -39,13 +43,23 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const [isThinking, setIsThinking] = useState<boolean>(false);
   const [credits, setCredits] = useState<number>(0);
 
-  const [history, setHistory] = useState<string[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(connected || false);
   const [__, setValue] = useCopyToClipboard();
 
   useEffect(() => {
+    setAV(domCookie.get("alreadyVisited"));
     void getCredits().then(setCredits);
   }, [userId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAV(domCookie.get("alreadyVisited"));
+      if (av?.value == "true") clearInterval(interval);
+      console.log(av?.value);
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   supabase.auth.onAuthStateChange((_, session) => {
     if (session) setIsConnected(true);
@@ -62,13 +76,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
     if (provider.name == "GPT") {
       if (!isConnected) return;
-
-      if (history.includes(search)) {
-        toast.error("You already asked this question (Click on the refresh button to ask again)");
-        return;
-      }
-
-      setHistory([...history, search]);
       setIsThinking(true);
 
       const response = await fetch("/api/chat", {
@@ -146,6 +153,21 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
           border: "1px solid #4B5563"
         }
       }} />
+
+      <div className={clsx(
+        "absolute", {
+          "hidden": av?.value == "true"
+        }
+      )}>
+        <Image
+          src={"/arrow.png"}
+          className="ml-5 mt-14"
+          loading="lazy"
+          alt="arrow pointing to the provider"
+          width={400}
+          height={100}
+        />
+      </div>
 
       <SearchProvider.Provider value={{ provider, setProvider }}>
         <div ref={containerRef}>
@@ -237,20 +259,22 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         </div>
 
         {isConnected && provider.name == "GPT" && (
-          <div className="flex items-center justify-end mt-1 gap-2">
-            <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
-              void handlePayment();
-            }}>
-              {credits > 0 && <>
-                <TbCoins className="h-5 w-5" />
+          <>
+            <div className="flex items-center justify-end mt-1 gap-2">
+              <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
+                void handlePayment();
+              }}>
+                {credits > 0 && <>
+                  <TbCoins className="h-5 w-5" />
                 &nbsp;{credits} credits remaining
-              </>}
-              {credits == 0 && <>
-                <TbCoins className="h-5 w-5" />
-                &nbsp;Buy credits to use AI (1 credit = 1 question)
-              </>}
-            </button>
-          </div>
+                </>}
+                {credits == 0 && <>
+                  <TbCoins className="h-5 w-5" />
+                &nbsp;You don&apos;t have any credits. Click here to buy some
+                </>}
+              </button>
+            </div>
+          </>
         )}
 
         {!isConnected && provider.name == "GPT" && (
