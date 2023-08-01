@@ -126,7 +126,7 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
                   value={search || ""}
                   autoFocus={true}
                   placeholder={randomQuestion}
-                  className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
+                  className="text-[#707F97] w-full placeholder-[#3f4753] outline-none ml-2 bg-transparent"
                   onChange={(e) => setSearch(e.target.value)}
                 />
 
