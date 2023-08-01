@@ -11,7 +11,7 @@ import { Text } from "#/lib/components/atoms/text";
 import { AiOutlineClose } from "react-icons/ai";
 import { FcGoogle } from "react-icons/fc";
 import { BsGithub } from "react-icons/bs";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdImage } from "react-icons/md";
 import { Toaster, toast } from "sonner";
 import { toPng } from "html-to-image";
@@ -21,6 +21,11 @@ type SearchBarProps = {
   connected?: boolean;
   randomQuestion: string;
   userId: string;
+};
+
+const getCredits = async(): Promise<number> => {
+  const data = await fetch("/api/credits");
+  return parseInt(await data.text());
 };
 
 export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion, userId }) =>  {
@@ -33,15 +38,17 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const [openAIFetching, setOpenAIFetching] = useState<boolean>(false);
   const [openAIRefetching, setOpenAIRefetching] = useState<boolean>(false);
   const [history, setHistory] = useState<string[]>([]);
+  const [credits, setCredits] = useState<number>(0);
   const [isConnected, setIsConnected] = useState<boolean>(connected || false);
   const [__, setValue] = useCopyToClipboard();
 
+  useEffect(() => {
+    void getCredits().then(setCredits);
+  }, [userId]);
+
   supabase.auth.onAuthStateChange((_, session) => {
-    if (session) {
-      setIsConnected(true);
-    } else {
-      setIsConnected(false);
-    }
+    if (session) setIsConnected(true);
+    else setIsConnected(false);
   });
 
   const handleSearch = async(e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -68,6 +75,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         method: "POST",
         body: JSON.stringify({ search })
       });
+
+      setCredits(credits - 1);
 
       const r = await response.text().then(text => text.slice(1, -1));
       setOpenAIResponse(r);
@@ -105,6 +114,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         method: "POST",
         body: JSON.stringify({ search })
       });
+
+      setCredits(credits - 1);
 
       const r = await response.text().then(text => text.slice(1, -1));
       setOpenAIResponse(r);
@@ -243,7 +254,14 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
             <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
               void handlePayment();
             }}>
-              <TbCoins className="h-5 w-5" />&nbsp;Buy more credits
+              {credits > 0 && <>
+                <TbCoins className="h-5 w-5" />
+                &nbsp;{credits} credits remaining
+              </>}
+              {credits == 0 && <>
+                <TbCoins className="h-5 w-5 animate-pulse" />
+                &nbsp;Buy credits
+              </>}
             </button>
           </div>
         )}
