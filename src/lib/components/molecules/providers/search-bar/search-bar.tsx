@@ -1,6 +1,6 @@
 "use client";
 
-import { providers, randomMessages } from "#/lib/configs/provider/provider.config";
+import { providers } from "#/lib/configs/provider/provider.config";
 import type { Provider } from "#/lib/configs/provider/provider.type";
 import { useCopyToClipboard, useEventListener } from "usehooks-ts";
 import { TbCopy, TbRefresh, TbTrash } from "react-icons/tb";
@@ -14,13 +14,10 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { toPng } from "html-to-image";
 
-const getQuestion = (): string => {
-  return randomMessages[Math.floor(Math.random() * randomMessages.length)].question;
-};
-
-export const SearchBar: Component<{ connected?: boolean }> = () =>  {
+export const SearchBar: Component<{ connected?: boolean; randomQuestion: string }> = ({
+  randomQuestion
+}) =>  {
   const [search, setSearch] = useState<string | null>(null);
-  const [rsearch, _] = useState<string>(getQuestion);
   const [provider, setProvider] = useState<Provider>(providers[0]);
   const [openAIResponse, setOpenAIResponse] = useState<string | null>(null);
   const [openAIFetching, setOpenAIFetching] = useState<boolean>(false);
@@ -95,7 +92,7 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
 
   const onTabPressed = (event: KeyboardEvent): void => {
     if (event.code == "Tab" && (search == "" || search == null)) {
-      setSearch(rsearch);
+      setSearch(randomQuestion);
       event.preventDefault();
     }
   };
@@ -128,7 +125,7 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
                   type="text"
                   value={search || ""}
                   autoFocus={true}
-                  placeholder={rsearch}
+                  placeholder={randomQuestion}
                   className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
                   onChange={(e) => setSearch(e.target.value)}
                 />

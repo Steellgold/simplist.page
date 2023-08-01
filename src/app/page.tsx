@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import { SearchBar } from "#/lib/components/molecules/providers/search-bar";
+import { randomMessages } from "#/lib/configs/provider/provider.config";
 
 const getData = async(): Promise<{ connected: boolean }> => {
   const supabase = createServerComponentClient({ cookies });
@@ -20,7 +21,7 @@ export default async function Index(): Promise<ReactElement> {
       <Image src={"/simplist-light.png"} alt="Simplist logo" quality={5} width={200} height={50} />
 
       <div className="flex flex-col max-w-2xl w-full">
-        <SearchBar connected={connected} />
+        <SearchBar connected={connected} randomQuestion={randomMessages[Math.floor(Math.random() * randomMessages.length)].question} />
       </div>
 
       {/* <div className={clsx(
