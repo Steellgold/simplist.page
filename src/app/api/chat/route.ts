@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 export async function POST(request: Request): Promise<NextResponse> {
-  console.log("request", request);
-
   const schema = z.object({
     search: z.string()
   }).safeParse(await request.json());

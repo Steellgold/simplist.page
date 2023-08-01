@@ -8,7 +8,6 @@ import { Providers, SearchProvider } from "../providers";
 import type { Component } from "#/lib/utils/component";
 import { Text } from "#/lib/components/atoms/text";
 import { AiOutlineClose } from "react-icons/ai";
-import { domCookie } from "cookie-muncher";
 import { MdImage } from "react-icons/md";
 import { Toaster, toast } from "sonner";
 import { useRef, useState } from "react";
@@ -75,7 +74,7 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
 
   const htmlToImageConvert = (): void => {
     if (!search) return;
-    toPng(containerRef.current!, { cacheBust: false })
+    toPng(containerRef.current!, { cacheBust: true })
       .then((dataUrl) => {
         const link = document.createElement("a");
         link.download = search.toLocaleLowerCase().replace(" ", "-") + ".png";
@@ -88,13 +87,7 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
   };
 
   const onTabPressed = (event: KeyboardEvent): void => {
-    if (event.code == "Tab") {
-      if (!search) return;
-      if (search.length > 0) return;
-      domCookie.set({ name: "tab-discovered", value: "true" });
-      event.preventDefault();
-      setSearch(rsearch);
-    }
+    if (event.code == "Tab" && (search == "" || search == null)) setSearch(rsearch);
   };
 
   useEventListener("keydown", onTabPressed);
@@ -110,86 +103,91 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
       }} />
 
       <SearchProvider.Provider value={{ provider, setProvider }}>
-        <div className={clsx(
-          "flex flex-col bg-[#1E293B] p-1 rounded-full mt-4 w-full max-w-2xl", {
-            "p-3 rounded-md": provider.name == "GPT" && openAIResponse != null
-          }
-        )} ref={containerRef}>
-          <div className="flex items-center justify-between">
-            <Providers />
+        <div ref={containerRef}>
+          <div className={clsx(
+            "flex flex-col bg-[#1E293B] p-1 rounded-full mt-4 w-full max-w-2xl", {
+              "p-3 rounded-md": provider.name == "GPT" && openAIResponse != null
+            }
+          )}>
+            <div className="flex items-center justify-between">
+              <Providers />
 
-            {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-            <form className="flex flex-1" onSubmit={handleSearch}>
-              <input
-                type="text"
-                value={search || ""}
-                autoFocus={true}
-                placeholder={rsearch}
-                className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
+              <form className="flex flex-1" onSubmit={handleSearch}>
+                <input
+                  type="text"
+                  value={search || ""}
+                  autoFocus={true}
+                  placeholder={rsearch}
+                  className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
 
-              {search && search.length > 0 && (
-                <button
-                  type="button"
-                  className="flex items-center justify-center p-3"
-                  onClick={() => setSearch("")}
-                >
-                  <AiOutlineClose className="text-[#707F97]" />
-                </button>
-              )}
-            </form>
-          </div>
-
-          <div>
-            {provider.name == "GPT" && openAIResponse && (
-              <div className="mt-4 gap-2 text-[#707F97] border border-[#707F97] rounded p-2 bg-[#1E293B]">
-                {openAIFetching && (
-                  <>
-                    {openAIRefetching && <Text>Sam is thinking to an better answer...</Text>}
-                    {!openAIRefetching && <Text>Sam is thinking</Text>}
-                  </>
+                {search && search.length > 0 && (
+                  <button
+                    type="button"
+                    className="flex items-center justify-center p-3"
+                    onClick={() => setSearch("")}
+                  >
+                    <AiOutlineClose className="text-[#707F97]" />
+                  </button>
                 )}
-                {!openAIFetching && <Text className="leading-loose"><strong>Sam:</strong>&nbsp;{openAIResponse}</Text>}
+              </form>
+            </div>
 
-                {!openAIFetching && (
-                  <div className="flex items-center justify-end mt-2 gap-2">
-                    <button className="p-1 hover:bg-blueDark hover:text-light rounded"
-                      onClick={() => toast.error("Not implemented yet")}>
-                      <MdImage
-                        className="h-5 w-5"
-                        onClick={() => {
-                          void htmlToImageConvert();
-                        }}
-                      />
-                    </button>
-                    <button className="p-1 hover:bg-blueDark hover:text-light rounded"
-                      onClick={() => toast.error("Not implemented yet")}>
-                      <TbTrash className="h-5 w-5" /></button>
-                    <button className="p-1 hover:bg-blueDark hover:text-light rounded">
-                      <TbRefresh
-                        className="h-5 w-5"
-                        onClick={() => {
-                          void setOpenAIFetching(true);
-                          void setOpenAIResponse("null");
-                          void setOpenAIRefetching(true);
-                          void reSearch();
-                        }}
-                      />
-                    </button>
-                    <button className="p-1 hover:bg-blueDark hover:text-light rounded">
-                      <TbCopy className="h-5 w-5"
-                        onClick={() => {
-                          void setValue(openAIResponse);
-                          toast.success("Copied to clipboard");
-                        }}/>
-                    </button>
+            <div>
+              {provider.name == "GPT" && openAIResponse && (
+                <>
+                  <div className="mt-4 gap-2 text-[#707F97] border border-[#707F97] rounded p-2 bg-[#1E293B]">
+                    {openAIFetching && (
+                      <>
+                        {openAIRefetching && <Text>Sam is thinking to an better answer...</Text>}
+                        {!openAIRefetching && <Text>Sam is thinking</Text>}
+                      </>
+                    )}
+                    {!openAIFetching && <Text className="leading-loose"><strong>Sam:</strong>&nbsp;{openAIResponse}</Text>}
+
+                    {!openAIFetching && (
+                      <div className="flex items-center justify-end mt-2 gap-2">
+                        <button className="p-1 hover:bg-blueDark hover:text-light rounded"
+                          onClick={() => toast.error("Not implemented yet")}>
+                          <TbTrash className="h-5 w-5" /></button>
+                        <button className="p-1 hover:bg-blueDark hover:text-light rounded">
+                          <TbRefresh
+                            className="h-5 w-5"
+                            onClick={() => {
+                              void setOpenAIFetching(true);
+                              void setOpenAIResponse("null");
+                              void setOpenAIRefetching(true);
+                              void reSearch();
+                            }}
+                          />
+                        </button>
+                        <button className="p-1 hover:bg-blueDark hover:text-light rounded">
+                          <TbCopy className="h-5 w-5"
+                            onClick={() => {
+                              void setValue(openAIResponse);
+                              toast.success("Copied to clipboard");
+                            }}/>
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
+
+        {provider.name == "GPT" && openAIResponse && !openAIFetching && !openAIRefetching && (
+          <div className="flex items-center justify-end mt-2 gap-2">
+            <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
+              void htmlToImageConvert();
+            }}>
+              <MdImage className="h-5 w-5"/>&nbsp;Export as image
+            </button>
+          </div>
+        )}
       </SearchProvider.Provider>
     </>
   );
