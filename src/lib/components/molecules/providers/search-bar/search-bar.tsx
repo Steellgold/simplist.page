@@ -13,20 +13,24 @@ import { MdImage } from "react-icons/md";
 import { Toaster, toast } from "sonner";
 import { useRef, useState } from "react";
 import clsx from "clsx";
-import { exportComponentAsPNG } from "react-component-export-image";
+import { toPng } from "html-to-image";
+
+const getQuestion = (): string => {
+  return randomMessages[Math.floor(Math.random() * randomMessages.length)].question;
+};
 
 export const SearchBar: Component<{ connected?: boolean }> = () =>  {
-  const [search, setSearch] = useState<string>("");
+  const [search, setSearch] = useState<string | null>(null);
+  const [rsearch, _] = useState<string>(getQuestion);
   const [provider, setProvider] = useState<Provider>(providers[0]);
   const [openAIResponse, setOpenAIResponse] = useState<string | null>(null);
   const [openAIFetching, setOpenAIFetching] = useState<boolean>(false);
   const [openAIRefetching, setOpenAIRefetching] = useState<boolean>(false);
-  const [_, setValue] = useCopyToClipboard();
-
-  const question = randomMessages[Math.floor(Math.random() * randomMessages.length)];
+  const [__, setValue] = useCopyToClipboard();
 
   const handleSearch = async(e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    if (!search) return;
     if (search.length == 0 || search.trim().length === 0) return;
     if (provider.name !== "GPT") {
       window.location.href = provider.url.replace("{search}", encodeURIComponent(search));
@@ -49,6 +53,7 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
   };
 
   const reSearch = async(): Promise<void> => {
+    if (!search) return;
     if (search.length == 0 || search.trim().length === 0) return;
 
     if (provider.name == "GPT") {
@@ -66,18 +71,33 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
     }
   };
 
+  const containerRef = useRef(null);
+
+  const htmlToImageConvert = (): void => {
+    if (!search) return;
+    toPng(containerRef.current!, { cacheBust: false })
+      .then((dataUrl) => {
+        const link = document.createElement("a");
+        link.download = search.toLocaleLowerCase().replace(" ", "-") + ".png";
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const onTabPressed = (event: KeyboardEvent): void => {
     if (event.code == "Tab") {
+      if (!search) return;
       if (search.length > 0) return;
       domCookie.set({ name: "tab-discovered", value: "true" });
       event.preventDefault();
-      setSearch(question.question);
+      setSearch(rsearch);
     }
   };
 
   useEventListener("keydown", onTabPressed);
-
-  const containerRef = useRef();
 
   return (
     <>
@@ -102,14 +122,14 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
             <form className="flex flex-1" onSubmit={handleSearch}>
               <input
                 type="text"
-                value={search}
+                value={search || ""}
                 autoFocus={true}
-                placeholder={question.question}
+                placeholder={rsearch}
                 className="text-[#707F97] w-full placeholder-[#707F97] outline-none ml-2 bg-transparent"
                 onChange={(e) => setSearch(e.target.value)}
               />
 
-              {search.length > 0 && (
+              {search && search.length > 0 && (
                 <button
                   type="button"
                   className="flex items-center justify-center p-3"
@@ -139,7 +159,7 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
                       <MdImage
                         className="h-5 w-5"
                         onClick={() => {
-                          void exportComponentAsPNG(containerRef);
+                          void htmlToImageConvert();
                         }}
                       />
                     </button>
