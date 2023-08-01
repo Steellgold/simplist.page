@@ -34,11 +34,12 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
-  const [openAIResponse, setOpenAIResponse] = useState<string | null>(null);
-  const [openAIFetching, setOpenAIFetching] = useState<boolean>(false);
-  const [openAIRefetching, setOpenAIRefetching] = useState<boolean>(false);
-  const [history, setHistory] = useState<string[]>([]);
+
+  const [response, setResponse] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState<boolean>(false);
   const [credits, setCredits] = useState<number>(0);
+
+  const [history, setHistory] = useState<string[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(connected || false);
   const [__, setValue] = useCopyToClipboard();
 
@@ -53,8 +54,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
   const handleSearch = async(e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    if (!search) return;
-    if (search.length == 0 || search.trim().length === 0) return;
+    if (!search || search.length == 0 || search.trim().length === 0) return;
     if (provider.name !== "GPT") {
       window.location.href = provider.url.replace("{search}", encodeURIComponent(search));
       return;
@@ -62,25 +62,23 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
     if (provider.name == "GPT") {
       if (!isConnected) return;
+
       if (history.includes(search)) {
         toast.error("You already asked this question (Click on the refresh button to ask again)");
         return;
       }
 
       setHistory([...history, search]);
-      setOpenAIFetching(true);
-      setOpenAIResponse("null");
+      setIsThinking(true);
 
       const response = await fetch("/api/chat", {
         method: "POST",
         body: JSON.stringify({ search })
       });
 
-      setCredits(credits - 1);
-
       const r = await response.text().then(text => text.slice(1, -1));
-      setOpenAIResponse(r);
-      setOpenAIFetching(false);
+      setResponse(r);
+      setIsThinking(false);
     }
   };
 
@@ -107,19 +105,13 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
     if (search.length == 0 || search.trim().length === 0) return;
 
     if (provider.name == "GPT") {
-      setOpenAIFetching(true);
-      setOpenAIResponse("null");
+      setIsThinking(true);
 
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        body: JSON.stringify({ search })
-      });
+      const response = await fetch("/api/chat", { method: "POST", body: JSON.stringify({ search }) });
+      const res = await response.text().then(text => text.slice(1, -1));
 
-      setCredits(credits - 1);
-
-      const r = await response.text().then(text => text.slice(1, -1));
-      setOpenAIResponse(r);
-      setOpenAIFetching(false);
+      setResponse(res);
+      setIsThinking(false);
     }
   };
 
@@ -157,7 +149,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         <div ref={containerRef}>
           <div className={clsx(
             "flex flex-col bg-[#1E293B] p-1 rounded-full mt-4 w-full max-w-2xl", {
-              "p-3 rounded-md": provider.name == "GPT" && openAIResponse != null
+              "p-3 rounded-md": provider.name == "GPT" && (response !== null || isThinking)
             }
           )}>
             <div className="flex items-center justify-between">
@@ -185,7 +177,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                     className="flex items-center justify-center p-3"
                     onClick={() => {
                       void setSearch(null);
-                      void setOpenAIResponse(null);
+                      void setResponse(null);
                     }}
                   >
                     <AiOutlineClose className="text-[#707F97]" />
@@ -195,47 +187,48 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
             </div>
 
             <div>
-              {provider.name == "GPT" && openAIResponse && (
-                <>
-                  <div className="mt-4 gap-2 text-[#707F97] border border-[#707F97] rounded p-2 bg-[#1E293B]">
-                    {openAIFetching && (
-                      <>
-                        {openAIRefetching && <Text>Sam is thinking to an better answer...</Text>}
-                        {!openAIRefetching && <Text>Sam is thinking</Text>}
-                      </>
-                    )}
-                    {!openAIFetching && <Text className="leading-loose"><strong>Sam:</strong>&nbsp;{openAIResponse}</Text>}
+              {provider.name == "GPT" && (
+                <div className={clsx(
+                  "mt-4 gap-2 text-[#707F97] border border-[#707F97] rounded p-2 bg-[#1E293B]", {
+                    "hidden": response == null,
+                    "flex flex-col": response
+                  }
+                )}>
+                  {isThinking && <Text>Sam is thinking</Text>}
+                  {!isThinking && <Text><strong>Sam:</strong>&nbsp;{response}</Text>}
 
-                    {!openAIFetching && (
-                      <div className="flex items-center justify-end mt-2 gap-2">
-                        <button className="p-1 hover:bg-blueDark hover:text-light rounded"
-                          onClick={() => {
-                            void setSearch(null);
-                            void setOpenAIResponse(null);
-                            toast.success("Your conversation has been deleted");
-                          }}>
-                          <TbTrash className="h-5 w-5" /></button>
-                        <button className="p-1 hover:bg-blueDark hover:text-light rounded"
-                          onClick={() => {
-                            void setOpenAIFetching(true);
-                            void setOpenAIResponse("null");
-                            void setOpenAIRefetching(true);
-                            void reSearch();
-                            toast.success("Sam is thinking to an better answer...");
-                          }} >
-                          <TbRefresh className="h-5 w-5" />
-                        </button>
-                        <button className="p-1 hover:bg-blueDark hover:text-light rounded"
-                          onClick={() => {
-                            void setValue(openAIResponse);
-                            toast.success("Copied to clipboard");
-                          }}>
-                          <TbCopy className="h-5 w-5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
+                  {!isThinking && (
+                    <div className="flex items-center justify-end mt-2 gap-2">
+                      <button className="p-1 rounded"
+                        onClick={() => {
+                          void htmlToImageConvert();
+                        }}>
+                        <MdImage className="h-5 w-5"/>
+                      </button>
+                      <button className="p-1 hover:bg-blueDark hover:text-light rounded"
+                        onClick={() => {
+                          void setSearch(null);
+                          void setResponse(null);
+                          toast.success("Your conversation has been deleted");
+                        }}>
+                        <TbTrash className="h-5 w-5" /></button>
+                      <button className="p-1 hover:bg-blueDark hover:text-light rounded"
+                        onClick={() => {
+                          void reSearch();
+                          toast.success("Sam is thinking to an better answer...");
+                        }} >
+                        <TbRefresh className="h-5 w-5" />
+                      </button>
+                      <button className="p-1 hover:bg-blueDark hover:text-light rounded"
+                        onClick={() => {
+                          void setValue(response || "");
+                          toast.success("Copied to clipboard");
+                        }}>
+                        <TbCopy className="h-5 w-5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -243,14 +236,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
         {isConnected && provider.name == "GPT" && (
           <div className="flex items-center justify-end mt-1 gap-2">
-            {openAIResponse && !openAIFetching && !openAIRefetching && (
-              <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
-                void htmlToImageConvert();
-              }}>
-                <MdImage className="h-5 w-5"/>&nbsp;Export as image
-              </button>
-            )}
-
             <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
               void handlePayment();
             }}>
