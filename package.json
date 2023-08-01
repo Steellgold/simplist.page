@@ -26,7 +26,6 @@
     "next": "13.4.7",
     "openai": "^3.3.0",
     "postcss": "8.4.24",
-    "prisma": "^5.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.10.1",
@@ -41,15 +40,13 @@
     "@bluzzi/eslint-config": "1.1.0",
     "@types/node": "20.3.3",
     "@types/react": "18.2.14",
-    "encoding": "^0.1.13"
+    "encoding": "^0.1.13",
+    "prisma": "^5.1.0"
   },
   "eslintConfig": {
     "extends": [
       "next/core-web-vitals",
       "@bluzzi"
-    ],
-    "rules": {
-      "no-unsafe-assignment": "off"
-    }
+    ]
   }
 }

@@ -1,4 +1,6 @@
 import { openai } from "#/lib/utils/openai";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis/nodejs";
 import { NextResponse } from "next/server";
@@ -11,6 +13,15 @@ const ratelimit = new Ratelimit({
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
+  const supabase = createRouteHandlerClient({ cookies });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json("Unauthorized", { status: 401 });
+
+  const { data, error } = await supabase.from("users").select("credits").eq("id", user.id).single();
+  if (error) return NextResponse.json(error.message, { status: 500 });
+  if (!data) return NextResponse.json("User not found", { status: 404 });
+  if (data.credits < 1) return NextResponse.json("Not enough credits", { status: 403 });
+
   const ip = request.headers.get("x-forwared-for") ?? "";
   const { success, reset } = await ratelimit.limit(ip);
 

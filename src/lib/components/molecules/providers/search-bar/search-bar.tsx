@@ -1,22 +1,26 @@
 "use client";
 
-import { providers } from "#/lib/configs/provider/provider.config";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Provider } from "#/lib/configs/provider/provider.type";
+import { providers } from "#/lib/configs/provider/provider.config";
 import { useCopyToClipboard, useEventListener } from "usehooks-ts";
 import { TbCopy, TbRefresh, TbTrash } from "react-icons/tb";
 import { Providers, SearchProvider } from "../providers";
 import type { Component } from "#/lib/utils/component";
 import { Text } from "#/lib/components/atoms/text";
 import { AiOutlineClose } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc";
+import { BsGithub } from "react-icons/bs";
+import { useRef, useState } from "react";
 import { MdImage } from "react-icons/md";
 import { Toaster, toast } from "sonner";
-import { useRef, useState } from "react";
-import clsx from "clsx";
 import { toPng } from "html-to-image";
+import Image from "next/image";
+import clsx from "clsx";
 
-export const SearchBar: Component<{ connected?: boolean; randomQuestion: string }> = ({
-  randomQuestion
-}) =>  {
+export const SearchBar: Component<{ connected?: boolean; randomQuestion: string }> = ({ connected, randomQuestion }) =>  {
+  const supabase = createClientComponentClient();
+
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
   const [openAIResponse, setOpenAIResponse] = useState<string | null>(null);
@@ -35,6 +39,7 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
     }
 
     if (provider.name == "GPT") {
+      if (!connected) return;
       if (history.includes(search)) {
         toast.error("You already asked this question (Click on the refresh button to ask again)");
         return;
@@ -56,6 +61,7 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
   };
 
   const reSearch = async(): Promise<void> => {
+    if (!connected) return;
     if (!search) return;
     if (search.length == 0 || search.trim().length === 0) return;
 
@@ -77,6 +83,7 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
   const containerRef = useRef(null);
 
   const htmlToImageConvert = (): void => {
+    if (!connected) return;
     if (!search) return;
     toPng(containerRef.current!, { cacheBust: true })
       .then((dataUrl) => {
@@ -126,7 +133,12 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
                   value={search || ""}
                   autoFocus={true}
                   placeholder={randomQuestion}
-                  className="text-[#707F97] w-full placeholder-[#3f4753] outline-none ml-2 bg-transparent"
+                  className={clsx(
+                    "text-[#707F97] w-full placeholder-[#3f4753] outline-none ml-2 bg-transparent", {
+                      "cursor-not-allowed": !connected
+                    }
+                  )}
+                  disabled={!connected}
                   onChange={(e) => setSearch(e.target.value)}
                 />
 
@@ -194,13 +206,47 @@ export const SearchBar: Component<{ connected?: boolean; randomQuestion: string 
           </div>
         </div>
 
-        {provider.name == "GPT" && openAIResponse && !openAIFetching && !openAIRefetching && (
-          <div className="flex items-center justify-end mt-2 gap-2">
+        {connected && provider.name == "GPT" && (
+          <div className="flex items-center justify-end mt-1 gap-2">
+            {openAIResponse && !openAIFetching && !openAIRefetching && (
+              <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
+                void htmlToImageConvert();
+              }}>
+                <MdImage className="h-5 w-5"/>&nbsp;Export as image
+              </button>
+            )}
+
             <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
-              void htmlToImageConvert();
+              void console.log("TODO: Redirect to stripe");
             }}>
-              <MdImage className="h-5 w-5"/>&nbsp;Export as image
+              <Image src={"/coin.png" } alt="Simplist logo" width={20} height={20} />
+              &nbsp;0 credits left
             </button>
+          </div>
+        )}
+
+        {!connected && provider.name == "GPT" && (
+          <div className="flex flex-col items-center justify-center mt-1 gap-2">
+            <Text>To use this feature, please login with one of this two providers below</Text>
+            <div className="flex items-center justify-center gap-2">
+              <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
+                void supabase.auth.signInWithOAuth({ provider: "github", options: {
+                  redirectTo: window.location.origin + "/auth/callback"
+                } });
+              }}>
+                <BsGithub className="h-5 w-5" color="white" />
+                &nbsp;Login with GitHub
+              </button>
+
+              <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
+                void supabase.auth.signInWithOAuth({ provider: "google", options: {
+                  redirectTo: window.location.origin + "/auth/callback"
+                } });
+              }}>
+                <FcGoogle className="h-5 w-5" />
+                &nbsp;Login with Google
+              </button>
+            </div>
           </div>
         )}
       </SearchProvider.Provider>
