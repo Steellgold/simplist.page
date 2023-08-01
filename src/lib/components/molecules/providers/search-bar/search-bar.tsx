@@ -25,6 +25,7 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
   const [openAIResponse, setOpenAIResponse] = useState<string | null>(null);
   const [openAIFetching, setOpenAIFetching] = useState<boolean>(false);
   const [openAIRefetching, setOpenAIRefetching] = useState<boolean>(false);
+  const [history, setHistory] = useState<string[]>([]);
   const [__, setValue] = useCopyToClipboard();
 
   const handleSearch = async(e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -37,6 +38,12 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
     }
 
     if (provider.name == "GPT") {
+      if (history.includes(search)) {
+        toast.error("You already asked this question (Click on the refresh button to ask again)");
+        return;
+      }
+
+      setHistory([...history, search]);
       setOpenAIFetching(true);
       setOpenAIResponse("null");
 
@@ -87,7 +94,10 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
   };
 
   const onTabPressed = (event: KeyboardEvent): void => {
-    if (event.code == "Tab" && (search == "" || search == null)) setSearch(rsearch);
+    if (event.code == "Tab" && (search == "" || search == null)) {
+      setSearch(rsearch);
+      event.preventDefault();
+    }
   };
 
   useEventListener("keydown", onTabPressed);
@@ -127,7 +137,10 @@ export const SearchBar: Component<{ connected?: boolean }> = () =>  {
                   <button
                     type="button"
                     className="flex items-center justify-center p-3"
-                    onClick={() => setSearch("")}
+                    onClick={() => {
+                      void setSearch(null);
+                      void setOpenAIResponse(null);
+                    }}
                   >
                     <AiOutlineClose className="text-[#707F97]" />
                   </button>

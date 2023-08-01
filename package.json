@@ -14,6 +14,8 @@
     "@supabase/auth-helpers-nextjs": "^0.7.2",
     "@supabase/supabase-js": "^2.26.0",
     "@types/react-dom": "18.2.6",
+    "@upstash/ratelimit": "^0.4.3",
+    "@upstash/redis": "^1.22.0",
     "autoprefixer": "10.4.14",
     "clsx": "^1.2.1",
     "cookie-muncher": "^0.4.2",
@@ -44,6 +46,9 @@
     "extends": [
       "next/core-web-vitals",
       "@bluzzi"
-    ]
+    ],
+    "rules": {
+      "no-unsafe-assignment": "off"
+    }
   }
 }

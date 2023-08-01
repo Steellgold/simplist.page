@@ -1,8 +1,30 @@
 import { openai } from "#/lib/utils/openai";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis/nodejs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+const ratelimit = new Ratelimit({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(2, "3 s")
+});
+
 export async function POST(request: Request): Promise<NextResponse> {
+  const ip = request.headers.get("x-forwared-for") ?? "";
+  const { success, reset } = await ratelimit.limit(ip);
+
+  if (!success) {
+    const now = Date.now();
+    const seconds = Math.ceil((reset - now) / 1000);
+    return NextResponse.json("Too Many Requests", {
+      status: 429,
+      headers: {
+        ["retry-after"]: seconds.toString()
+      }
+    });
+  }
+
   const schema = z.object({
     search: z.string()
   }).safeParse(await request.json());
