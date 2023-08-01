@@ -1,6 +1,7 @@
 import "./tailwind.css";
 
 import type { Component } from "#/lib/utils/component";
+import { Analytics } from "@vercel/analytics/react";
 import type { PropsWithChildren } from "react";
 
 export { metadata } from "#/lib/configs/metadata";
@@ -12,6 +13,7 @@ const RootLayout: Component<PropsWithChildren> = ({ children }) => {
     <html lang="en" suppressHydrationWarning>
       <body className="bg-blueDark">
         {children}
+        <Analytics />
       </body>
     </html>
   );
