@@ -354,7 +354,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
             <div className="flex items-center justify-center gap-2">
               <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
                 void supabase.auth.signInWithOAuth({ provider: "github", options: {
-                  redirectTo: process.env.NEXT_PUBLIC_URL + "/auth/callback"
+                  redirectTo: (process.env.NEXT_PUBLIC_URL || "https://simplist.page")  + "/auth/callback"
                 } });
               }}>
                 <BsGithub className="h-5 w-5" color="white" />
@@ -363,7 +363,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
               <button className="text-[#707F97] flex items-center p-1 hover:text-light rounded" onClick={() => {
                 void supabase.auth.signInWithOAuth({ provider: "google", options: {
-                  redirectTo: process.env.NEXT_PUBLIC_URL + "/auth/callback"
+                  redirectTo: (process.env.NEXT_PUBLIC_URL || "https://simplist.page") + "/auth/callback"
                 } });
               }}>
                 <FcGoogle className="h-5 w-5" />
