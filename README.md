@@ -6,6 +6,8 @@ You can export the result in a PNG file, regenerate the response or copy for pas
 
 **Simplist does not use any database** except for user accounts, which store the number of credits remaining (for IA).
 
+> **Stack:** TypeScript, React, Next.JS, Stripe, Redis, Supabase, TailwindCSS, OpenAI, Zod
+
 ### TODO:
 - [ ] History of searches (IA) with Local Storage
 - [X] Account creation and connection
