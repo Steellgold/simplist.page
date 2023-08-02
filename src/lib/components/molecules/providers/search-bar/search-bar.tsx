@@ -51,13 +51,14 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   }, [userId]);
 
   useEffect(() => {
+    setAv(domCookie.get("alreadyVisited"));
+
     const interval = setInterval(() => {
       if (domCookie.get("alreadyVisited") !== null) {
         setAv({ name: "alreadyVisited", value: "true" });
         clearInterval(interval);
         return;
       }
-
     }, 500);
 
     return () => clearInterval(interval);
