@@ -1,5 +1,6 @@
 import { prisma } from "#/lib/db/prisma";
 import { stripe } from "#/lib/utils/stripe";
+import { kv } from "@vercel/kv";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
@@ -10,21 +11,20 @@ export const GET = async(request: NextRequest): Promise<NextResponse> => {
 
   if (sessionId) {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (session.status !== "complete" || session.payment_status !== "paid") return NextResponse.redirect(requestUrl.origin); // Lol, bye
+    if (session.status !== "complete" || session.payment_status !== "paid") return NextResponse.redirect(requestUrl.origin); // Payment not complete
 
     const schema = z.object({ userId: z.string() }).safeParse(session.metadata);
-    if (!schema.success) return NextResponse.redirect(requestUrl.origin); // Lol, this never happens. (I think) (I hope) (I pray)
+    if (!schema.success) return NextResponse.redirect(requestUrl.origin); // User is not logged in when buying credits
 
-    const alreadyPaid = await prisma.payments.findFirst({ where: { id: session.id } });
-    if (alreadyPaid) return NextResponse.redirect(requestUrl.origin); // hmmm
-    await prisma.payments.update({ where: { id: session.id }, data: { alreadyApproved: true } });
+    if (await kv.get(session.id) == true) return NextResponse.redirect(requestUrl.origin); // User already got credits
+    await kv.set(session.id, true);
 
     const data = await prisma.user.update({
       where: { id: schema.data.userId },
-      data: { credits: { increment: 100 * (session.amount_total || 1) } }
+      data: { credits: { increment: 100 } }
     });
 
-    if (!data) return NextResponse.redirect(requestUrl.origin); // Lol, this never happens. (👀)
+    if (!data) return NextResponse.redirect(requestUrl.origin); // User not found (shouldn't happen)
   }
 
   return NextResponse.redirect(requestUrl.origin);

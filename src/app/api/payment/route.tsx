@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable camelcase */
-import { prisma } from "#/lib/db/prisma";
 import { stripe } from "#/lib/utils/stripe";
+import { kv } from "@vercel/kv";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -21,8 +20,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     cancel_url: process.env.NEXT_PUBLIC_URL
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-  await prisma.payments.create({ data: { id: session.id, alreadyApproved: false } });
-
+  await kv.set(session.id, false);
   return NextResponse.json(session.url, { status: 201 });
 }
