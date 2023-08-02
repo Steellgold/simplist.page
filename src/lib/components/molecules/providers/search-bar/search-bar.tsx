@@ -35,7 +35,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const supabase = createClientComponentClient();
   const containerRef = useRef(null);
 
-  const [av, setAv] = useState<Cookie | null>(null);
+  const [av, setAv] = useState<Cookie | null>({ name: "alreadyVisited", value: "true" });
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
 
@@ -216,14 +216,14 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
               {provider.name == "GPT" && (
                 <div className={clsx(
                   "mt-4 gap-2 text-[#707F97] border border-[#707F97] rounded p-2 bg-[#1E293B]", {
-                    "hidden": response == null,
-                    "flex flex-col": response
+                    "hidden": response == null && !isThinking,
+                    "flex flex-col": response || isThinking
                   }
                 )}>
                   {isThinking && <Text>Sam is thinking</Text>}
                   {!isThinking && <Text><strong>Sam:</strong>&nbsp;{response}</Text>}
 
-                  {!isThinking && (
+                  {!isThinking && response && (
                     <div className="flex items-center justify-end mt-2 gap-2">
                       <button className="p-1 rounded"
                         onClick={() => {
