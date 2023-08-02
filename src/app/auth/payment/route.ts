@@ -23,7 +23,7 @@ export const GET = async(request: NextRequest): Promise<NextResponse> => {
 
     const data = await prisma.user.update({
       where: { id: schema.data.userId },
-      data: { credits: { increment: 100 * (session.amount_total || 1) } }
+      data: { credits: { increment: 100 } }
     });
 
     if (!data) return NextResponse.redirect(requestUrl.origin); // Lol, this never happens. (👀)
