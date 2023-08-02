@@ -135,6 +135,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
   const handlePayment = async(): Promise<void> => {
     if (!isConnected && provider.name == "GPT") return;
+    console.log(userId);
+
     const response = await fetch("/api/payment", {
       method: "POST",
       body: JSON.stringify({ userId }),

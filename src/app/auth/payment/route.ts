@@ -15,9 +15,13 @@ export const GET = async(request: NextRequest): Promise<NextResponse> => {
     const schema = z.object({ userId: z.string() }).safeParse(session.metadata);
     if (!schema.success) return NextResponse.redirect(requestUrl.origin); // Lol, this never happens. (I think) (I hope) (I pray)
 
+    const alreadyPaid = await prisma.payments.findFirst({ where: { id: session.id } });
+    if (alreadyPaid) return NextResponse.redirect(requestUrl.origin); // hmmm
+    await prisma.payments.update({ where: { id: session.id }, data: { alreadyApproved: true } });
+
     const data = await prisma.user.update({
       where: { id: schema.data.userId },
-      data: { credits: { increment: 100 } }
+      data: { credits: { increment: 100 * (session.amount_total || 1) } }
     });
 
     if (!data) return NextResponse.redirect(requestUrl.origin); // Lol, this never happens. (👀)

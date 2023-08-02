@@ -1,11 +1,12 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { ReactElement } from "react";
 import Image from "next/image";
 import { SearchBar } from "#/lib/components/molecules/providers/search-bar";
 import { randomMessages } from "#/lib/configs/provider/provider.config";
+import { cookies } from "next/headers";
 
-export default async function Index(): Promise<ReactElement> {
-  const supabase = createClientComponentClient();
+const Home = async(): Promise<ReactElement> => {
+  const supabase = createServerComponentClient({ cookies });
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
@@ -22,4 +23,6 @@ export default async function Index(): Promise<ReactElement> {
       </div>
     </>
   );
-}
+};
+
+export default Home;
