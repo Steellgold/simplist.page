@@ -15,15 +15,16 @@ export const GET = async(request: NextRequest): Promise<NextResponse> => {
     const supabase = createRouteHandlerClient({ cookies });
     const resp = await supabase.auth.exchangeCodeForSession(code);
 
-    const data = await prisma.user.create({
+    const existingUser = await prisma.user.findUnique({ where: { id: resp.data.user?.id } });
+    if (existingUser) return NextResponse.redirect(requestUrl.origin);
+
+    await prisma.user.create({
       data: {
         id: resp.data.user?.id,
         email: resp.data.user?.email ?? "",
         credits: 0
       }
     });
-
-    console.log(data);
   }
 
   return NextResponse.redirect(requestUrl.origin);

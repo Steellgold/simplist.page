@@ -4,7 +4,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Provider } from "#/lib/configs/provider/provider.type";
 import { providers } from "#/lib/configs/provider/provider.config";
 import { useCopyToClipboard, useEventListener } from "usehooks-ts";
-import { TbCoins, TbCopy, TbMessageCircle, TbMessageCircleOff, TbRefresh, TbTrash } from "react-icons/tb";
+import { TbCoins, TbCopy, TbMessageCircle, TbMessageCircleOff, TbTrash } from "react-icons/tb";
 import { Providers, SearchProvider } from "../providers";
 import type { Component } from "#/lib/utils/component";
 import { Text } from "#/lib/components/atoms/text";
@@ -94,6 +94,11 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         return;
       }
 
+      if (credits == 0) {
+        setResponse("You don't have any credits, please buy some");
+        return;
+      }
+
       setIsThinking(true);
       setAs(true);
       setReplyTo(null);
@@ -143,37 +148,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
       .catch((err) => {
         console.log(err);
       });
-  };
-
-  const reSearch = async(): Promise<void> => {
-    if (!isConnected && provider.name == "GPT") return;
-    if (!search) return;
-    if (search.length == 0 || search.trim().length === 0) return;
-
-    if (provider.name == "GPT") {
-      setIsThinking(true);
-      setAs(true);
-      setReplyTo(null);
-      setoldSearch(search);
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        body: JSON.stringify({ search, reply: reply || null, oldSearch: oldSearch || null })
-      });
-
-      const schema = chatResponse.safeParse(await response.json());
-      if (!schema.success) {
-        setResponse("An error has occurred, if this error persists, please contact the support");
-        setIsThinking(false);
-        setAs(false);
-        return;
-      }
-
-      setCredits(credits - 1);
-      setResponse(schema.data.message || "I don't know what to say");
-      setIsThinking(false);
-      setAs(false);
-    }
   };
 
   const onTabPressed = (event: KeyboardEvent): void => {
@@ -306,19 +280,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                           toast.success("Your conversation has been deleted");
                         }}>
                         <TbTrash className="h-5 w-5" /></button>
-                      <button className={clsx(
-                        "p-1", {
-                          "cursor-not-allowed opacity-40": reply !== null,
-                          "hover:text-light rounded hover:bg-blueDark": reply == null
-                        }
-                      )}
-                      disabled={reply !== null}
-                      onClick={() => {
-                        if (reply !== null) return;
-                        void reSearch();
-                        toast.success("Sam is thinking to an better answer...");
-                      }}>
-                        <TbRefresh className="h-5 w-5" /></button>
                       <button className="p-1 hover:bg-blueDark hover:text-light rounded"
                         onClick={() => {
                           void setValue(response || "");
