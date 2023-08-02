@@ -35,7 +35,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const supabase = createClientComponentClient();
   const containerRef = useRef(null);
 
-  const [av, _] = useState<Cookie | null>(null);
+  const [av, setAv] = useState<Cookie | null>(null);
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
 
@@ -53,6 +53,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   useEffect(() => {
     const interval = setInterval(() => {
       if (domCookie.get("alreadyVisited") !== null) {
+        setAv({ name: "alreadyVisited", value: "true" });
         clearInterval(interval);
         return;
       }
