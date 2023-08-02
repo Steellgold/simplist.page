@@ -35,7 +35,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const supabase = createClientComponentClient();
   const containerRef = useRef(null);
 
-  const [av, setAV] = useState<Cookie | null>(null);
+  const [av, _] = useState<Cookie | null>(null);
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
 
@@ -47,15 +47,16 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const [__, setValue] = useCopyToClipboard();
 
   useEffect(() => {
-    setAV(domCookie.get("alreadyVisited"));
     void getCredits().then(setCredits);
   }, [userId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setAV(domCookie.get("alreadyVisited"));
-      if (av?.value == "true") clearInterval(interval);
-      console.log(av?.value);
+      if (domCookie.get("alreadyVisited") !== null) {
+        clearInterval(interval);
+        return;
+      }
+
     }, 500);
 
     return () => clearInterval(interval);
