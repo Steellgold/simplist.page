@@ -5,11 +5,9 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis/nodejs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "#/lib/db/prisma";
 import type { ChatCompletionRequestMessage } from "openai";
 
 const ratelimit = new Ratelimit({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(2, "3 s")
 });
@@ -23,9 +21,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (error) return NextResponse.json({ message: "You are not logged in, please refresh the page." }, { status: 401 });
   if (!data) return NextResponse.json({ message: "This connection is not linked to a user." }, { status: 404 });
 
-  if (data.credits < 1) return NextResponse.json({ message: "You don't have enough credits, click on the text at bottom right to get more." }, {
-    status: 402
-  });
+  if (data.credits < 1) return NextResponse.json(
+    { message: "You don't have enough credits, click on the text at bottom right to get more." },
+    { status: 402 }
+  );
 
   const ip = request.headers.get("x-forwared-for") ?? "";
   const { success, reset } = await ratelimit.limit(ip);
@@ -66,15 +65,18 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const res = (await openai.createChatCompletion({ messages, model: "gpt-3.5-turbo" })).data;
 
-  const schema2 = z.object({ choices: z.array(z.object({ message: z.object({ content: z.string().optional() }) }))
+  const schema2 = z.object({
+    choices: z.array(z.object({
+      message: z.object({
+        content: z.string().optional()
+      })
+    }))
   }).safeParse(res);
 
   if (!schema2.success) return NextResponse.json({ message: schema2.error }, { status: 400 });
 
-  const { credits } = await prisma.user.update({ where: { id: user.id }, data: { credits: { decrement: 1 } } });
-
   if (schema2.data.choices[0].message?.content) {
-    return NextResponse.json({ message: schema2.data.choices[0].message.content, newCredits: credits }, { status: 200 });
+    return NextResponse.json({ message: schema2.data.choices[0].message.content }, { status: 200 });
   }
 
   return NextResponse.json({ message: "Sorry, I don't understand." }, { status: 400 });

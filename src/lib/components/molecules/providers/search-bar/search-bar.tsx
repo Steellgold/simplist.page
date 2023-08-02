@@ -32,11 +32,8 @@ const getCredits = async(): Promise<number> => {
   return parseInt(await data.text());
 };
 
-
-const chatResponse = z.object({
-  message: z.string(),
-  newCredits: z.number().optional().nullable() // If null or undefined, it an error has occurred
-});
+const chatResponse = z.object({ message: z.string() });
+const creditsResponse = z.object({ newCredits: z.number() });
 
 export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion, userId }) =>  {
   const supabase = createClientComponentClient();
@@ -107,7 +104,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         body: JSON.stringify({ search, reply: reply || null, oldSearch: oldSearch || null })
       });
 
-
       const schema = chatResponse.safeParse(await response.json());
 
       if (!schema.success) {
@@ -119,8 +115,16 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
       setResponse(schema.data.message || "I don't know what to say");
       setIsThinking(false);
-      setCredits(schema.data.newCredits || credits);
       setAs(false);
+
+      const response2 = await fetch("/api/credits", { method: "PUT" });
+      const schema2 = creditsResponse.safeParse(await response2.json());
+      if (!schema2.success) {
+        setCredits(credits - 1);
+        return;
+      }
+
+      setCredits(schema2.data.newCredits);
     }
   };
 
