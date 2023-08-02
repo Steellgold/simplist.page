@@ -1,11 +1,15 @@
+/* eslint-disable camelcase */
 import { openai } from "#/lib/utils/openai";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import type { ChatCompletionRequestMessage } from "openai";
+import type { ChatCompletionRequestMessage } from "openai-edge";
+import { OpenAIStream, StreamingTextResponse } from "ai";
 
-export async function POST(request: Request): Promise<NextResponse> {
+export const runtime = "edge";
+
+export async function POST(request: Request): Promise<NextResponse | StreamingTextResponse> {
   const supabase = createRouteHandlerClient({ cookies });
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -33,21 +37,13 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   messages.push({ role: "user", content: schema.data.search });
 
-  const res = (await openai.createChatCompletion({ messages, model: "gpt-3.5-turbo" })).data;
+  const res = await openai.createChatCompletion({
+    messages,
+    model: "gpt-3.5-turbo",
+    stream: true,
+    max_tokens: 150
+  });
 
-  const schema2 = z.object({
-    choices: z.array(z.object({
-      message: z.object({
-        content: z.string().optional()
-      })
-    }))
-  }).safeParse(res);
-
-  if (!schema2.success) return NextResponse.json({ message: schema2.error }, { status: 400 });
-
-  if (schema2.data.choices[0].message?.content) {
-    return NextResponse.json({ message: schema2.data.choices[0].message.content }, { status: 200 });
-  }
-
-  return NextResponse.json({ message: "Sorry, I don't understand." }, { status: 400 });
+  const stream: ReadableStream<any> = OpenAIStream(res);
+  return new StreamingTextResponse(stream);
 }

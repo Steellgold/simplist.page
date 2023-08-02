@@ -1,25 +1,26 @@
 "use client";
 
+import { TbCoins, TbCopy, TbMessageCircle, TbMessageCircleOff, TbTrash } from "react-icons/tb";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Provider } from "#/lib/configs/provider/provider.type";
-import { providers } from "#/lib/configs/provider/provider.config";
 import { useCopyToClipboard, useEventListener } from "usehooks-ts";
-import { TbCoins, TbCopy, TbMessageCircle, TbMessageCircleOff, TbTrash } from "react-icons/tb";
+import { providers } from "#/lib/configs/provider/provider.config";
 import { Providers, SearchProvider } from "../providers";
 import type { Component } from "#/lib/utils/component";
+import { useEffect, useRef, useState } from "react";
 import { Text } from "#/lib/components/atoms/text";
 import { AiOutlineClose } from "react-icons/ai";
-import { FcGoogle } from "react-icons/fc";
-import { BsGithub } from "react-icons/bs";
-import { useEffect, useRef, useState } from "react";
-import { MdImage } from "react-icons/md";
-import { Toaster, toast } from "sonner";
-import clsx from "clsx";
+import { convertPng } from "#/lib/utils/export";
+import { readStream } from "#/lib/utils/stream";
 import type { Cookie } from "cookie-muncher";
 import { domCookie } from "cookie-muncher";
+import { FcGoogle } from "react-icons/fc";
+import { BsGithub } from "react-icons/bs";
+import { MdImage } from "react-icons/md";
+import { Toaster, toast } from "sonner";
 import Image from "next/image";
+import clsx from "clsx";
 import { z } from "zod";
-import { convertPng } from "#/lib/utils/export";
 
 type SearchBarProps = {
   connected?: boolean;
@@ -32,7 +33,6 @@ const getCredits = async(): Promise<number> => {
   return parseInt(await data.text());
 };
 
-const chatResponse = z.object({ message: z.string() });
 const creditsResponse = z.object({ newCredits: z.number() });
 
 export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion, userId }) =>  {
@@ -100,6 +100,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
       }
 
       setIsThinking(true);
+      setResponse(null);
       setAs(true);
       setReplyTo(null);
       setoldSearch(search);
@@ -109,18 +110,20 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         body: JSON.stringify({ search, reply: reply || null, oldSearch: oldSearch || null })
       });
 
-      const schema = chatResponse.safeParse(await response.json());
-
-      if (!schema.success) {
-        setResponse("An error has occurred, if this error persists, please contact the support");
-        setIsThinking(false);
+      if (!response.ok || response.status !== 200 || response.body == null) {
+        setResponse("An error occured, please try again later");
         setAs(false);
         return;
       }
 
-      setResponse(schema.data.message || "I don't know what to say");
       setIsThinking(false);
       setAs(false);
+
+      let result = "";
+      await readStream(response.body, (chunk) => {
+        result += chunk;
+        setResponse(result);
+      });
 
       const response2 = await fetch("/api/credits", { method: "PUT" });
       const schema2 = creditsResponse.safeParse(await response2.json());
@@ -213,6 +216,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                     onClick={() => {
                       void setSearch(null);
                       void setResponse(null);
+                      void setReplyTo(null);
+                      void setAs(false);
                     }}
                   >
                     <AiOutlineClose className="text-[#707F97]" />
@@ -229,8 +234,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                     "flex flex-col": response || isThinking
                   }
                 )}>
-                  {isThinking && <Text>Sam is thinking</Text>}
-                  {!isThinking && <Text><strong>Sam:</strong>&nbsp;{response}</Text>}
+                  {isThinking && !response && <Text><strong>Sam&nbsp;</strong>is thinking...</Text>}
+                  {response && response.length > 0 && <Text><strong>Sam:</strong>&nbsp;{response}</Text>}
 
                   {reply && (
                     <div className="absolute rounded-tr-md left-0 bottom-0 mt-2 mr-2 flex items-center gap-2 p-2 bg-[#707f97]">
@@ -238,7 +243,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                     </div>
                   )}
 
-                  {!isThinking && response && (
+                  {response && (
                     <div className="justify-end flex items-center mt-2 gap-2">
                       <button className="p-1 rounded"
                         onClick={() => {
