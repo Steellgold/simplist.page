@@ -14,12 +14,12 @@ import { BsGithub } from "react-icons/bs";
 import { useEffect, useRef, useState } from "react";
 import { MdImage } from "react-icons/md";
 import { Toaster, toast } from "sonner";
-import { toPng } from "html-to-image";
 import clsx from "clsx";
 import type { Cookie } from "cookie-muncher";
 import { domCookie } from "cookie-muncher";
 import Image from "next/image";
 import { z } from "zod";
+import { convertPng } from "#/lib/utils/export";
 
 type SearchBarProps = {
   connected?: boolean;
@@ -133,23 +133,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
     }
   };
 
-  const htmlToImageConvert = (): void => {
-    if (!isConnected && provider.name == "GPT") return;
-    if (!search) return;
-    if (containerRef.current == null) return;
-
-    toPng(containerRef.current, { cacheBust: true })
-      .then((dataUrl) => {
-        const link = document.createElement("a");
-        link.download = search.toLocaleLowerCase().replace(" ", "-") + ".png";
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
   const onTabPressed = (event: KeyboardEvent): void => {
     if (event.code == "Tab" && (search == "" || search == null)) {
       setSearch(randomQuestion);
@@ -259,7 +242,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                     <div className="justify-end flex items-center mt-2 gap-2">
                       <button className="p-1 rounded"
                         onClick={() => {
-                          void htmlToImageConvert();
+                          void convertPng(containerRef, (search || Math.random().toString(36).substring(7)) + ".png");
                         }}>
                         <MdImage className="h-5 w-5"/></button>
                       {/* if & else */}
