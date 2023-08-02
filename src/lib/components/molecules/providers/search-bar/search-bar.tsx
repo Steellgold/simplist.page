@@ -4,7 +4,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Provider } from "#/lib/configs/provider/provider.type";
 import { providers } from "#/lib/configs/provider/provider.config";
 import { useCopyToClipboard, useEventListener } from "usehooks-ts";
-import { TbCoins, TbCopy, TbRefresh, TbTrash } from "react-icons/tb";
+import { TbCoins, TbCopy, TbMessageCircle, TbMessageCircleOff, TbRefresh, TbTrash } from "react-icons/tb";
 import { Providers, SearchProvider } from "../providers";
 import type { Component } from "#/lib/utils/component";
 import { Text } from "#/lib/components/atoms/text";
@@ -19,6 +19,7 @@ import clsx from "clsx";
 import type { Cookie } from "cookie-muncher";
 import { domCookie } from "cookie-muncher";
 import Image from "next/image";
+import { z } from "zod";
 
 type SearchBarProps = {
   connected?: boolean;
@@ -31,6 +32,12 @@ const getCredits = async(): Promise<number> => {
   return parseInt(await data.text());
 };
 
+
+const chatResponse = z.object({
+  message: z.string(),
+  newCredits: z.number().optional().nullable() // If null or undefined, it an error has occurred
+});
+
 export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion, userId }) =>  {
   const supabase = createClientComponentClient();
   const containerRef = useRef(null);
@@ -38,9 +45,14 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const [av, setAv] = useState<Cookie | null>({ name: "alreadyVisited", value: "true" });
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
+  const [as, setAs] = useState<boolean>(false);
 
   const [response, setResponse] = useState<string | null>(null);
   const [isThinking, setIsThinking] = useState<boolean>(false);
+
+  const [oldSearch, setoldSearch] = useState<string | null>(null);
+  const [reply, setReplyTo] = useState<string | null>(null);
+
   const [credits, setCredits] = useState<number>(0);
 
   const [isConnected, setIsConnected] = useState<boolean>(connected || false);
@@ -79,17 +91,36 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
     if (provider.name == "GPT") {
       if (!isConnected) return;
+      if (credits == 0) return;
+      if (as == true) {
+        toast.error("Please wait for the answer");
+        return;
+      }
+
       setIsThinking(true);
+      setAs(true);
+      setReplyTo(null);
+      setoldSearch(search);
 
       const response = await fetch("/api/chat", {
         method: "POST",
-        body: JSON.stringify({ search })
+        body: JSON.stringify({ search, reply: reply || null, oldSearch: oldSearch || null })
       });
 
-      const r = await response.text().then(text => text.slice(1, -1));
-      setResponse(r);
+
+      const schema = chatResponse.safeParse(await response.json());
+
+      if (!schema.success) {
+        setResponse("An error has occurred, if this error persists, please contact the support");
+        setIsThinking(false);
+        setAs(false);
+        return;
+      }
+
+      setResponse(schema.data.message || "I don't know what to say");
       setIsThinking(false);
-      setCredits(credits - 1);
+      setCredits(schema.data.newCredits || credits);
+      setAs(false);
     }
   };
 
@@ -117,13 +148,27 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
     if (provider.name == "GPT") {
       setIsThinking(true);
+      setAs(true);
+      setReplyTo(null);
+      setoldSearch(search);
 
-      const response = await fetch("/api/chat", { method: "POST", body: JSON.stringify({ search }) });
-      const res = await response.text().then(text => text.slice(1, -1));
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        body: JSON.stringify({ search, reply: reply || null, oldSearch: oldSearch || null })
+      });
+
+      const schema = chatResponse.safeParse(await response.json());
+      if (!schema.success) {
+        setResponse("An error has occurred, if this error persists, please contact the support");
+        setIsThinking(false);
+        setAs(false);
+        return;
+      }
 
       setCredits(credits - 1);
-      setResponse(res);
+      setResponse(schema.data.message || "I don't know what to say");
       setIsThinking(false);
+      setAs(false);
     }
   };
 
@@ -139,7 +184,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
     const response = await fetch("/api/payment", {
       method: "POST",
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ userId, reply }),
       headers: { "Content-Type": "application/json" }
     });
 
@@ -186,7 +231,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
               {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
               <form className="flex flex-1" onSubmit={handleSearch}>
                 <input
-                  type="text"
                   value={search || ""}
                   autoFocus={true}
                   placeholder={randomQuestion}
@@ -195,6 +239,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                       "cursor-not-allowed": !isConnected && provider.name == "GPT"
                     }
                   )}
+                  // input can break lines if it's too long
+                  style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
                   disabled={!isConnected && provider.name == "GPT"}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -217,7 +263,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
             <div>
               {provider.name == "GPT" && (
                 <div className={clsx(
-                  "mt-4 gap-2 text-[#707F97] border border-[#707F97] rounded p-2 bg-[#1E293B]", {
+                  "mt-4 gap-2 text-[#707F97] border border-[#707F97] rounded p-2 bg-[#1E293B] relative", {
                     "hidden": response == null && !isThinking,
                     "flex flex-col": response || isThinking
                   }
@@ -225,13 +271,29 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                   {isThinking && <Text>Sam is thinking</Text>}
                   {!isThinking && <Text><strong>Sam:</strong>&nbsp;{response}</Text>}
 
+                  {reply && (
+                    <div className="absolute rounded-tr-md left-0 bottom-0 mt-2 mr-2 flex items-center gap-2 p-2 bg-[#707f97]">
+                      <Text className="text-sm text-[#1e293b]">Marked as context</Text>
+                    </div>
+                  )}
+
                   {!isThinking && response && (
-                    <div className="flex items-center justify-end mt-2 gap-2">
+                    <div className="justify-end flex items-center mt-2 gap-2">
                       <button className="p-1 rounded"
                         onClick={() => {
                           void htmlToImageConvert();
                         }}>
-                        <MdImage className="h-5 w-5"/>
+                        <MdImage className="h-5 w-5"/></button>
+                      {/* if & else */}
+                      <button className="p-1 hover:bg-blueDark hover:text-light rounded"
+                        onClick={() => {
+                          void setReplyTo(reply == null ? response : null);
+                        }}>
+                        {reply == null && (
+                          <TbMessageCircle className="h-5 w-5" />
+                        ) || (
+                          <TbMessageCircleOff className="h-5 w-5" />
+                        )}
                       </button>
                       <button className="p-1 hover:bg-blueDark hover:text-light rounded"
                         onClick={() => {
@@ -240,20 +302,25 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                           toast.success("Your conversation has been deleted");
                         }}>
                         <TbTrash className="h-5 w-5" /></button>
-                      <button className="p-1 hover:bg-blueDark hover:text-light rounded"
-                        onClick={() => {
-                          void reSearch();
-                          toast.success("Sam is thinking to an better answer...");
-                        }} >
-                        <TbRefresh className="h-5 w-5" />
-                      </button>
+                      <button className={clsx(
+                        "p-1", {
+                          "cursor-not-allowed opacity-40": reply !== null,
+                          "hover:text-light rounded hover:bg-blueDark": reply == null
+                        }
+                      )}
+                      disabled={reply !== null}
+                      onClick={() => {
+                        if (reply !== null) return;
+                        void reSearch();
+                        toast.success("Sam is thinking to an better answer...");
+                      }}>
+                        <TbRefresh className="h-5 w-5" /></button>
                       <button className="p-1 hover:bg-blueDark hover:text-light rounded"
                         onClick={() => {
                           void setValue(response || "");
                           toast.success("Copied to clipboard");
                         }}>
-                        <TbCopy className="h-5 w-5" />
-                      </button>
+                        <TbCopy className="h-5 w-5" /></button>
                     </div>
                   )}
                 </div>
