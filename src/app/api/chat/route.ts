@@ -40,8 +40,7 @@ export async function POST(request: Request): Promise<NextResponse | StreamingTe
   const res = await openai.createChatCompletion({
     messages,
     model: "gpt-3.5-turbo",
-    stream: true,
-    max_tokens: 150
+    stream: true
   });
 
   const stream: ReadableStream<any> = OpenAIStream(res);
