@@ -1,9 +1,9 @@
 "use client";
 
 import { TbCoins, TbCopy, TbMessageCircle, TbMessageCircleOff, TbTrash } from "react-icons/tb";
+import { useCopyToClipboard, useEventListener, useLocalStorage } from "usehooks-ts";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Provider } from "#/lib/configs/provider/provider.type";
-import { useCopyToClipboard, useEventListener } from "usehooks-ts";
 import { providers } from "#/lib/configs/provider/provider.config";
 import { Providers, SearchProvider } from "../providers";
 import type { Component } from "#/lib/utils/component";
@@ -12,8 +12,6 @@ import { Text } from "#/lib/components/atoms/text";
 import { AiOutlineClose } from "react-icons/ai";
 import { convertPng } from "#/lib/utils/export";
 import { readStream } from "#/lib/utils/stream";
-import type { Cookie } from "cookie-muncher";
-import { domCookie } from "cookie-muncher";
 import { FcGoogle } from "react-icons/fc";
 import { BsGithub } from "react-icons/bs";
 import { MdImage } from "react-icons/md";
@@ -39,7 +37,8 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   const supabase = createClientComponentClient();
   const containerRef = useRef(null);
 
-  const [av, setAv] = useState<Cookie | null>({ name: "alreadyVisited", value: "true" });
+  const [alreadyVisited, _] = useLocalStorage("alreadyVisited", false);
+
   const [search, setSearch] = useState<string | null>(null);
   const [provider, setProvider] = useState<Provider>(providers[0]);
   const [as, setAs] = useState<boolean>(false);
@@ -58,20 +57,6 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
   useEffect(() => {
     void getCredits().then(setCredits);
   }, [userId]);
-
-  useEffect(() => {
-    setAv(domCookie.get("alreadyVisited"));
-
-    const interval = setInterval(() => {
-      if (domCookie.get("alreadyVisited") !== null) {
-        setAv({ name: "alreadyVisited", value: "true" });
-        clearInterval(interval);
-        return;
-      }
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, []);
 
   supabase.auth.onAuthStateChange((_, session) => {
     if (session) setIsConnected(true);
@@ -169,7 +154,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
 
       <div className={clsx(
         "absolute", {
-          "hidden": av?.value == "true"
+          "invisible": alreadyVisited
         }
       )}>
         <Image

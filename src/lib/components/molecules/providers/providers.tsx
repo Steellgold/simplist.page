@@ -3,11 +3,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Provider } from "#/lib/configs/provider/provider.type";
 import { providers } from "#/lib/configs/provider/provider.config";
-import { domCookie } from "cookie-muncher";
 import type { ReactElement } from "react";
 import Image from "next/image";
 import React from "react";
 import clsx from "clsx";
+import { useLocalStorage } from "usehooks-ts";
 
 type ProviderProps = {
   provider: Provider;
@@ -23,13 +23,11 @@ export const SearchProvider = createContext<ProviderProps>({
 export const Providers = (): ReactElement => {
   const { provider, setProvider } = useContext(SearchProvider);
   const [selectProvider, setSelectProvider] = useState<boolean>(false);
+  const [_, setAlreadyVisited] = useLocalStorage("alreadyVisited", false);
+  const [searchProvider, setSearchProvider] = useLocalStorage<Provider>("provider", providers[0]);
 
   useEffect(() => {
-    const providerCookie = domCookie.get("provider");
-    if (providerCookie) {
-      const filteredProvider = providers.find(provider => provider.icon === providerCookie.value.toLowerCase() + ".png");
-      if (filteredProvider) setProvider(filteredProvider);
-    }
+    setProvider(searchProvider);
   });
 
   return (
@@ -38,11 +36,8 @@ export const Providers = (): ReactElement => {
         <div
           className="bg-[#2B3A52] flex rounded-full p-2 ml-0.5"
           onClick={() => {
+            setAlreadyVisited(true);
             setSelectProvider(!selectProvider);
-            domCookie.set({
-              name: "alreadyVisited",
-              value: "true"
-            });
           }}>
 
           <Image
@@ -75,10 +70,8 @@ export const Providers = (): ReactElement => {
                   height={24}
                   onClick={() => {
                     setProvider(provider);
+                    setSearchProvider(provider);
                     setSelectProvider(false);
-                    domCookie.set({ name: "provider", value: provider.name.toLowerCase() }, {
-                      expires: new Date(2030, 11, 31, 23, 59, 59, 999)
-                    });
                   }}
                 />
               ))}
