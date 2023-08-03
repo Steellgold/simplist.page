@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactElement } from "react";
+import { TbArrowBack } from "react-icons/tb";
 
 const Home = (): ReactElement => {
   return (
@@ -11,6 +12,10 @@ const Home = (): ReactElement => {
       <Image src={"/simplist-privacy.png"} loading="lazy" alt="Simplist logo" quality={5} width={200} height={50} />
 
       <div className="flex flex-col max-w-2xl w-full mb-40">
+        <Link href={"/"} className="text-gray-100 hover:text-gray-300 transition-colors duration-300 ease-in-out flex">
+          <TbArrowBack className="text-2xl" />&nbsp;&nbsp;Return to Simplist
+        </Link>
+
         <Text className="text-left text-lg mt-4">
           We, the team at Simplist, are committed to respecting the privacy and security of your personal data when you use our website.
         </Text>
