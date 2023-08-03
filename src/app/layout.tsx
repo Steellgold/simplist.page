@@ -30,12 +30,6 @@ const RootLayout: Component<PropsWithChildren> = ({ children }) => {
             height="54"
           />
         </Link>
-
-        <div className="absolute bottom-0 right-0 mb-4 mr-4">
-          <Link href={"/privacy"} className="text-gray-100 hover:text-gray-300 transition-colors duration-300 ease-in-out">
-            privacy policy
-          </Link>
-        </div>
       </body>
     </html>
   );

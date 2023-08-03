@@ -4,6 +4,7 @@ import { randomMessages } from "#/lib/configs/provider/provider.config";
 import type { ReactElement } from "react";
 import { cookies } from "next/headers";
 import Image from "next/image";
+import Link from "next/link";
 
 const Home = async(): Promise<ReactElement> => {
   const supabase = createServerComponentClient({ cookies });
@@ -19,6 +20,12 @@ const Home = async(): Promise<ReactElement> => {
             userId={user?.id || ""}
             connected={user !== null}
             randomQuestion={randomMessages[Math.floor(Math.random() * randomMessages.length)].question} />
+        </div>
+
+        <div className="absolute bottom-0 right-0 mb-4 mr-4">
+          <Link href={"/privacy"} className="text-gray-100 hover:text-gray-300 transition-colors duration-300 ease-in-out">
+            privacy policy
+          </Link>
         </div>
       </div>
     </>
