@@ -21,6 +21,7 @@ import clsx from "clsx";
 import { z } from "zod";
 
 type SearchBarProps = {
+  alreadyVisited?: boolean;
   connected?: boolean;
   randomQuestion: string;
   userId: string;
@@ -35,33 +36,35 @@ const creditsResponse = z.object({ newCredits: z.number() });
 
 export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion, userId }) =>  {
   const supabase = createClientComponentClient();
-  const containerRef = useRef(null);
-
-  const [alreadyVisited, _] = useLocalStorage("alreadyVisited", false);
-
-  const [search, setSearch] = useState<string | null>(null);
-  const [provider, setProvider] = useState<Provider>(providers[0]);
-  const [as, setAs] = useState<boolean>(false);
-
-  const [response, setResponse] = useState<string | null>(null);
-  const [isThinking, setIsThinking] = useState<boolean>(false);
-
-  const [oldSearch, setoldSearch] = useState<string | null>(null);
-  const [reply, setReplyTo] = useState<string | null>(null);
-
-  const [credits, setCredits] = useState<number>(0);
-
-  const [isConnected, setIsConnected] = useState<boolean>(connected || false);
-  const [__, setValue] = useCopyToClipboard();
-
-  useEffect(() => {
-    void getCredits().then(setCredits);
-  }, [userId]);
 
   supabase.auth.onAuthStateChange((_, session) => {
     if (session) setIsConnected(true);
     else setIsConnected(false);
   });
+
+  const [alreadyVisited, _] = useLocalStorage<boolean>("alreadyVisited", false);
+  const [showUseAIImage, setShowUseAIImage] = useState<boolean>(false);
+
+  const [search, setSearch] = useState<string | null>(null);
+
+  const [provider, setProvider] = useState<Provider>(providers[0]);
+  const [as, setAs] = useState<boolean>(false);
+  const [response, setResponse] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState<boolean>(false);
+  const [oldSearch, setoldSearch] = useState<string | null>(null);
+  const [reply, setReplyTo] = useState<string | null>(null);
+  const [credits, setCredits] = useState<number>(0);
+  const [isConnected, setIsConnected] = useState<boolean>(connected || false);
+  const [__, setValue] = useCopyToClipboard();
+
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    void getCredits().then(setCredits);
+
+    if (alreadyVisited) setShowUseAIImage(false);
+    else setShowUseAIImage(true);
+  }, [userId, alreadyVisited]);
 
   const handleSearch = async(e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -152,20 +155,18 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
         }
       }} />
 
-      <div className={clsx(
-        "absolute", {
-          "invisible": alreadyVisited
-        }
-      )}>
-        <Image
-          src={"/arrow.png"}
-          className="ml-5 mt-14"
-          loading="lazy"
-          alt="arrow pointing to the provider"
-          width={400}
-          height={100}
-        />
-      </div>
+      <Image
+        src={"/arrow.png"}
+        className={clsx(
+          "absolute ml-5 mt-14", {
+            "invisible": !showUseAIImage
+          }
+        )}
+        loading="lazy"
+        alt="arrow pointing to the provider"
+        width={400}
+        height={100}
+      />
 
       <SearchProvider.Provider value={{ provider, setProvider }}>
         <div ref={containerRef}>
@@ -279,7 +280,7 @@ export const SearchBar: Component<SearchBarProps> = ({ connected, randomQuestion
                 </>}
                 {credits == 0 && <>
                   <TbCoins className="h-5 w-5" />
-                &nbsp;You don&apos;t have any credits. Click here to buy some
+                &nbsp;Click here to buy credits
                 </>}
               </button>
             </div>
