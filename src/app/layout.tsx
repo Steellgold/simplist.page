@@ -3,8 +3,8 @@ import "./tailwind.css";
 import type { Component } from "#/lib/utils/component";
 import { Analytics } from "@vercel/analytics/react";
 import type { PropsWithChildren } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 export { metadata } from "#/lib/configs/metadata";
 

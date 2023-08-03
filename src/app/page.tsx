@@ -1,9 +1,9 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { ReactElement } from "react";
-import Image from "next/image";
 import { SearchBar } from "#/lib/components/molecules/providers/search-bar";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { randomMessages } from "#/lib/configs/provider/provider.config";
+import type { ReactElement } from "react";
 import { cookies } from "next/headers";
+import Image from "next/image";
 
 const Home = async(): Promise<ReactElement> => {
   const supabase = createServerComponentClient({ cookies });

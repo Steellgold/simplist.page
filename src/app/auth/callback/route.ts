@@ -1,9 +1,8 @@
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "#/lib/db/prisma";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { stripe } from "#/lib/utils/stripe";
-import { kv } from "@vercel/kv";
 import { NextResponse } from "next/server";
+import { kv } from "@vercel/kv";
 import { z } from "zod";
 
 export async function POST(request: Request): Promise<NextResponse> {

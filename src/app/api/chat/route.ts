@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
-import { openai } from "#/lib/utils/openai";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-import { z } from "zod";
 import type { ChatCompletionRequestMessage } from "openai-edge";
 import { OpenAIStream, StreamingTextResponse } from "ai";
+import { openai } from "#/lib/utils/openai";
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { z } from "zod";
 
 export const runtime = "edge";
 
